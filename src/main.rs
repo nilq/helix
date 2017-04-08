@@ -1,8 +1,8 @@
-pub mod lexer;
+pub mod parser;
 
 #[allow(unused_must_use)]
 fn tokenize() {
-    let mut tokenizer = lexer::Tokenizer::new();
+    let mut tokenizer = parser::tokenizer::Tokenizer::new();
 
     let code = "
     a = 1
@@ -17,7 +17,7 @@ fn tokenize() {
 }
 
 fn tree() {
-    use lexer::block_tree::BlockTree;
+    use parser::block_tree::BlockTree;
 
     let code = "
     outer
@@ -36,10 +36,29 @@ fn tree() {
 
     let root = tree.make_tree(&indents);
 
-    println!("\n=> {:#?}", lexer::Tokenizer::tokenize_branch(&root))
+    println!("\n=> {:#?}", parser::tokenizer::Tokenizer::tokenize_branch(&root))
+}
+
+#[allow(unused_must_use)]
+fn parse() {
+    let mut tokenizer = parser::tokenizer::Tokenizer::new();
+
+    let code = "
+    hello
+    a(1, 2, 3) + 1 + (2 + 100)
+    ".to_string();
+
+    println!("source: \n{}", code);
+
+    tokenizer.tokenize(code);
+
+    let mut parser = parser::ast::Parser::from(tokenizer);
+
+    println!("\n=> {:#?}", parser.parse())
 }
 
 fn main() {
     tree();
-    tokenize()
+    tokenize();
+    parse()
 }

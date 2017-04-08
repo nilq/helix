@@ -1,12 +1,12 @@
-pub mod token;
-pub mod block_tree;
+use super::token::{
+        Token,
+        TokenType,
+        Operator,
+    };
 
-use self::token::{
-    Token,
-    TokenType,
-    Operator,
-};
+use super::block_tree;
 
+#[derive(Debug, Clone)]
 pub struct Tokenizer {
     tokens: Vec<Token>,
     lines:  u32,
@@ -100,7 +100,7 @@ impl<'a> Tokenizer {
         }
 
         while offset > 0 && !is_op {
-            match binary_op(&line[self.start .. self.pos + offset]) {
+            match operator(&line[self.start .. self.pos + offset]) {
                 Some(_) => is_op = true,
                 None    => (),
             }
@@ -116,6 +116,16 @@ impl<'a> Tokenizer {
     pub fn next_token(&mut self) -> bool {
         if self.top < self.tokens.len() {
             self.top += 1;
+            
+            return true
+        }
+
+        false
+    }
+
+    pub fn prev_token(&mut self) -> bool {
+        if self.top < self.tokens.len() {
+            self.top -= 1;
             
             return true
         }
@@ -215,9 +225,13 @@ impl<'a> Tokenizer {
                         while self.look(line).is_digit(10) {
                             self.pos += 1
                         }
+
+                        self.push(TokenType::Float, line);
+
+                        continue
                     }
 
-                    self.push(TokenType::Number, line);
+                    self.push(TokenType::Integer, line);
 
                     continue
                 }
@@ -325,7 +339,7 @@ fn symbol(c: char) -> Option<TokenType> {
     }
 }
 
-pub fn binary_op(v: &str) -> Option<(Operator, u8)> {
+pub fn operator(v: &str) -> Option<(Operator, u8)> {
     match v {
         "*"  => Some((Operator::Mul,     1)),
         "/"  => Some((Operator::Div,     1)),
