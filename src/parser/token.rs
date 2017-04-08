@@ -1,5 +1,7 @@
 #[derive(Debug, PartialEq, Clone)]
 pub enum TokenType {
+    Block(Vec<Token>),
+
     Integer,
     Float,
 
@@ -22,6 +24,9 @@ pub enum TokenType {
     Bang,
     Semicolon,
 
+    If,
+
+    Boolean,
     Operator,
 }
 
@@ -42,7 +47,7 @@ pub enum Operator {
     GtEqual,    
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Token {
     token_type: TokenType,
     row:        u32,

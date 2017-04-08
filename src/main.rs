@@ -41,24 +41,39 @@ fn tree() {
 
 #[allow(unused_must_use)]
 fn parse() {
-    let mut tokenizer = parser::tokenizer::Tokenizer::new();
+    use parser::block_tree::BlockTree;
 
     let code = "
-    hello
-    a(1, 2, 3) + 1 + (2 + 100)
-    ".to_string();
+if 1 == 1
+    a = false
+    b = true
+
+    if a == false
+        more_nested = \"hello i am string\"
+    ";
 
     println!("source: \n{}", code);
 
-    tokenizer.tokenize(code);
+    let mut tree = BlockTree::new(code, 0);
+    let indents  = tree.collect_indents();
 
-    let mut parser = parser::ast::Parser::from(tokenizer);
+    let root = tree.make_tree(&indents);
+
+    println!("root: => {:#?}", parser::tokenizer::Tokenizer::tokenize_branch(&root));
+
+    let mut parser = parser::ast::Parser::from(
+             parser::tokenizer::Tokenizer::from(
+                    parser::tokenizer::flatten_tree(
+                            &parser::tokenizer::Tokenizer::tokenize_branch(&root)
+                        ),
+                ),
+        );
 
     println!("\n=> {:#?}", parser.parse())
 }
 
 fn main() {
-    tree();
-    tokenize();
+    //tree();
+    //tokenize();
     parse()
 }

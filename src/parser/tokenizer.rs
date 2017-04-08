@@ -199,7 +199,7 @@ impl<'a> Tokenizer {
                         self.pos += 1
                     }
 
-                    match keyword(line) {
+                    match keyword(&line[self.start .. self.pos]) {
                         Some(t) => self.push(t, line),
                         None    => self.push(TokenType::Ident, line),
                     }
@@ -308,6 +308,24 @@ impl<'a> Tokenizer {
     }
 }
 
+pub fn flatten_tree<'b>(branch: &block_tree::Branch<'b>) -> Vec<Token> {
+    let mut flattened: Vec<Token> = Vec::new();
+
+    for chunk in branch.content.iter() {
+        match chunk.get_value() {
+            block_tree::ChunkValue::Tokens(ref t) => flattened.append(&mut t.clone()),
+            block_tree::ChunkValue::Block(ref b)  => flattened.push(
+                    Token::new(
+                            TokenType::Block(flatten_tree(b)), "".to_string(), 0, 0,
+                        )
+                ),
+            _ => continue,
+        }
+    }
+
+    flattened
+}
+
 fn identifier(c: char) -> bool {
     c.is_alphabetic() || c == '_'
                       || c == '?'
@@ -317,7 +335,10 @@ fn identifier(c: char) -> bool {
 
 fn keyword(v: &str) -> Option<TokenType> {
     match v {
-        _ => None
+        "true" |
+        "false" => Some(TokenType::Boolean),
+        "if"    => Some(TokenType::If),
+        _ => None,
     }
 }
 

@@ -8,7 +8,7 @@ pub enum Expression {
     Integer(i64),
     Float(f64),
     Text(String),
-    Bool(bool),
+    Boolean(bool),
 
     Ident(String),
 
@@ -29,6 +29,15 @@ pub enum Statement {
     Assignment(
             String,
             Box<Expression>,
+        ),
+    
+    Block(
+            Box<Vec<Statement>>,
+        ),
+
+    If(
+            Box<Expression>,
+            Box<Statement>,
         ),
 
     Expression(Box<Expression>),
@@ -190,6 +199,12 @@ impl Parser {
                         )
                 ),
 
+            TokenType::Boolean => Ok(
+                    Expression::Boolean(
+                            self.tokenizer.current_content() == "true",
+                        )
+                ),
+
             TokenType::Text => Ok(
                     Expression::Text(
                             self.tokenizer.current_content(),
@@ -217,8 +232,6 @@ impl Parser {
 
             TokenType::LParen => {
 
-                    println!("stuck here?");
-                
                     self.tokenizer.next_token();
 
                     let expression = try!(self.expression());
@@ -244,6 +257,24 @@ impl Parser {
         }
     }
 
+    fn block(&mut self) -> Result<Vec<Statement>, String> {
+        match self.tokenizer.current().get_type() {
+            TokenType::Block(v) => {
+                    let mut p = Parser::from(
+                            Tokenizer::from(v)
+                        );
+                    
+                    p.parse()
+                },
+            _ => Err(
+                    format!(
+                            "expected block, found: {:?}",
+                            self.tokenizer.current().get_type(),
+                        )
+                ),
+        }
+    }
+
     fn statement(&mut self) -> Result<Statement, String> {
         match self.tokenizer.current().get_type() {
             TokenType::Ident => {
@@ -263,6 +294,8 @@ impl Parser {
                     )
                 }
 
+                self.tokenizer.next_token();
+
                 let expression = try!(self.expression());
 
                 Ok(
@@ -272,6 +305,29 @@ impl Parser {
                         )
                 )
             },
+
+            TokenType::If => {
+                    self.tokenizer.next_token();
+
+                    let condition = try!(self.expression());
+
+                    self.tokenizer.next_token();
+
+                    let body = try!(self.block());
+
+                    self.tokenizer.next_token();
+
+                    Ok(
+                        Statement::If(
+                                Box::new(condition),
+                                Box::new(
+                                        Statement::Block(
+                                                Box::new(body)
+                                            )
+                                    )
+                            )
+                    )
+                },
 
             _ => {
                 let expression = try!(self.expression());
