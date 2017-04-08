@@ -1,3 +1,5 @@
+![praise lord helix](http://assets.pokemon.com/assets/cms2/img/pokedex/full/139.png)
+
 # helix
 A programming language transpiler
 
