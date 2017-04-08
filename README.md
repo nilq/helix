@@ -32,6 +32,82 @@ if foo == 10
     else
         print("bar is not 'hey'")
 ```
+Output AST
+```
+abstract syntax tree =>
+[
+    Assignment(
+        "foo",
+        Integer(
+            10
+        )
+    ),
+    If(
+        Operation(
+            Integer(
+                10
+            ),
+            Equal,
+            Ident(
+                "foo"
+            )
+        ),
+        Block(
+            [
+                Assignment(
+                    "bar",
+                    Text(
+                        "foo is 10"
+                    )
+                ),
+                IfElse(
+                    Operation(
+                        Text(
+                            "hey"
+                        ),
+                        Equal,
+                        Ident(
+                            "bar"
+                        )
+                    ),
+                    Block(
+                        [
+                            Expression(
+                                Call(
+                                    Ident(
+                                        "print"
+                                    ),
+                                    [
+                                        Text(
+                                            "hey hey"
+                                        )
+                                    ]
+                                )
+                            )
+                        ]
+                    ),
+                    Block(
+                        [
+                            Expression(
+                                Call(
+                                    Ident(
+                                        "print"
+                                    ),
+                                    [
+                                        Text(
+                                            "bar is not \'hey\'"
+                                        )
+                                    ]
+                                )
+                            )
+                        ]
+                    )
+                )
+            ]
+        )
+    )
+]
+```
 
 ## Draft
 
