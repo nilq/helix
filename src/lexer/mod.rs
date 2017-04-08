@@ -1,4 +1,6 @@
 pub mod token;
+pub mod block_tree;
+
 use self::token::{
     Token,
     TokenType,
