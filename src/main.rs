@@ -5,19 +5,18 @@ fn tokenize() {
     let mut tokenizer = lexer::Tokenizer::new();
 
     let code = "
-    a := 1
-    b := 'i am a string'
+    a = 1
+    b = 'i am a string'
     ".to_string();
 
     println!("source: \n{}", code);
 
     tokenizer.tokenize(code);
 
-    println!("\n=>{:#?}", tokenizer.get_tokens())
+    println!("\n=> {:#?}", tokenizer.get_tokens())
 }
 
 fn tree() {
-    use lexer::block_tree;
     use lexer::block_tree::BlockTree;
 
     let code = "
@@ -34,7 +33,10 @@ fn tree() {
     let indents  = tree.collect_indents();
 
     println!("source: \n{}", code);
-    println!("\n=>{:#?}", tree.make_tree(&indents))
+
+    let root = tree.make_tree(&indents);
+
+    println!("\n=> {:#?}", lexer::Tokenizer::tokenize_branch(&root))
 }
 
 fn main() {

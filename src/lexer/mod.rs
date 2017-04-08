@@ -259,6 +259,39 @@ impl<'a> Tokenizer {
 
         Ok(())
     }
+
+    #[allow(unused_mut, unused_must_use)]
+    pub fn tokenize_branch(branch: &block_tree::Branch<'a>) -> block_tree::Branch<'a> {
+        let mut product = block_tree::Branch::new(Vec::new());
+
+        for chunk in branch.content.iter() {
+            match chunk.get_value() {
+                block_tree::ChunkValue::Text(t) => {
+                    let mut tokenizer = Tokenizer::new();
+
+                    tokenizer.tokenize(t.to_string());
+
+                    product.content.push(
+                        block_tree::Chunk::new(
+                            block_tree::ChunkValue::Tokens(
+                                    tokenizer.get_tokens().clone(),
+                                )
+                        )
+                    )
+                },
+
+                block_tree::ChunkValue::Block(ref b) => product.content.push(
+                        block_tree::Chunk::new(
+                            block_tree::ChunkValue::Block(Self::tokenize_branch(b)),
+                        )
+                    ),
+
+                _ => continue,
+            }
+        }
+
+        product
+    }
 }
 
 fn identifier(c: char) -> bool {

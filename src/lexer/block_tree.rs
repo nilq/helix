@@ -29,7 +29,7 @@ impl<'a> Chunk<'a> {
 
 #[derive(Debug, Clone)]
 pub struct Branch<'a> {
-    content: Vec<Chunk<'a>>,
+    pub content: Vec<Chunk<'a>>,
 }
 
 impl<'a> Branch<'a> {
@@ -40,10 +40,6 @@ impl<'a> Branch<'a> {
         Branch {
             content: content,
         }
-    }
-
-    pub fn get_content(&self) -> Vec<Chunk<'a>> {
-        self.content.clone()
     }
 }
 
