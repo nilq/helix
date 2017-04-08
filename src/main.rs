@@ -44,12 +44,14 @@ fn parse() {
     use parser::block_tree::BlockTree;
 
     let code = "
-if 1 == 1
-    a = false
-    b = true
+if false
+    b? = false
+    b  = true
 
     if a == false
         more_nested = \"hello i am string\"
+else
+    a = 'no success without succ'
     ";
 
     println!("source: \n{}", code);
@@ -69,7 +71,13 @@ if 1 == 1
                 ),
         );
 
-    println!("\n=> {:#?}", parser.parse())
+    println!(
+            "\n=> {:#?}",
+            match parser.parse() {
+                Ok(c)  => c,
+                Err(e) => panic!(e),
+            },
+        )
 }
 
 fn main() {

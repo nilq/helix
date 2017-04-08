@@ -25,6 +25,7 @@ pub enum TokenType {
     Semicolon,
 
     If,
+    Else,
 
     Boolean,
     Operator,

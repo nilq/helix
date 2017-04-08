@@ -154,7 +154,7 @@ impl<'a> Tokenizer {
             true  => Ok(self.current()),
             false => Err(
                     format!(
-                        "expected {:?} but found {:?}", token, self.current()
+                        "expected {:?} but found {:#?}", token, self.current()
                     )
                 )
         }
@@ -194,8 +194,8 @@ impl<'a> Tokenizer {
                     continue
                 }
 
-                if c.is_alphabetic() {
-                    while identifier(self.look(line)) {
+                if identifier(self.look(line)) {
+                    while identifier(self.look(line)) || self.look(line).is_digit(10) {
                         self.pos += 1
                     }
 
@@ -330,13 +330,13 @@ fn identifier(c: char) -> bool {
     c.is_alphabetic() || c == '_'
                       || c == '?'
                       || c == '!'
-                      || c.is_digit(10)
 }
 
 fn keyword(v: &str) -> Option<TokenType> {
     match v {
         "true" |
         "false" => Some(TokenType::Boolean),
+        "else"  => Some(TokenType::Else),
         "if"    => Some(TokenType::If),
         _ => None,
     }

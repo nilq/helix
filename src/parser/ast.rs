@@ -40,6 +40,12 @@ pub enum Statement {
             Box<Statement>,
         ),
 
+    IfElse(
+            Box<Expression>,
+            Box<Statement>,
+            Box<Statement>,
+        ),
+
     Expression(Box<Expression>),
 }
 
@@ -252,7 +258,7 @@ impl Parser {
                 },
             
             _ => Err(
-                    format!("unexpected term: {:?}", token_type)
+                    format!("unexpected term: {:#?}", token_type)
                 ),
         }
     }
@@ -313,7 +319,32 @@ impl Parser {
 
                     self.tokenizer.next_token();
 
-                    let body = try!(self.block());
+                    let body = try!(self.block());  
+
+                    self.tokenizer.next_token();
+
+                    if self.tokenizer.current().get_type() == TokenType::Else {
+                        self.tokenizer.next_token();
+
+                        let else_body = try!(self.block());
+
+                        return Ok(
+                                Statement::IfElse(
+                                        Box::new(condition),
+                                        Box::new(
+                                                Statement::Block(
+                                                        Box::new(body),
+                                                    )
+                                            ),
+
+                                        Box::new(
+                                                Statement::Block(
+                                                        Box::new(else_body),
+                                                    )
+                                            ),
+                                    )
+                            )
+                    }
 
                     self.tokenizer.next_token();
 
