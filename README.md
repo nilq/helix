@@ -1,4 +1,4 @@
-![praise lord helix](http://assets.pokemon.com/assets/cms2/img/pokedex/full/139.png =128x)
+![praise lord helix](http://assets.pokemon.com/assets/cms2/img/pokedex/full/139.png 128x128)
 
 # helix
 A programming language transpiler
