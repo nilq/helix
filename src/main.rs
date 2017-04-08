@@ -1,67 +1,58 @@
+extern crate docopt;
+use          docopt::Docopt;
+
+use std::io;
+use std::io::prelude::*;
+
+use std::fs::File;
+use std::env;
+
 pub mod parser;
 
-#[allow(unused_must_use)]
-fn tokenize() {
-    let mut tokenizer = parser::tokenizer::Tokenizer::new();
+const USAGE: &'static str = "
+helix language
 
-    let code = "
-    a = 1
-    b = 'i am a string'
-    ".to_string();
+usage:
+    helix repl
+    helix translate <source>
 
-    println!("source: \n{}", code);
+options:
+    -h --help   display this message
+    --version   display version
+";
 
-    tokenizer.tokenize(code);
+fn repl() {
+    loop {
+        print!(">>> ");
+        io::stdout().flush().unwrap();
 
-    println!("\n=> {:#?}", tokenizer.get_tokens())
+        let mut input_line = String::new();
+
+        match io::stdin().read_line(&mut input_line) {
+            Ok(_)  => {
+                if input_line.trim() == String::from(":quit") ||
+                   input_line.trim() == String::from(":q") 
+                {
+                    println!("=> bye bb <3");
+
+                    std::process::exit(0)
+                }
+                
+                println!("=>\n{}", translate(&input_line));
+            },
+
+            Err(e) => panic!(e),
+        }
+    }
 }
 
-fn tree() {
+fn translate(source: &str) -> String {
     use parser::block_tree::BlockTree;
 
-    let code = "
-    outer
-        inner1
-        inner1
-            inner2
-        inner1
-    outer
-        inner1
-    ";
-
-    let mut tree = BlockTree::new(code, 0);
-    let indents  = tree.collect_indents();
-
-    println!("source: \n{}", code);
-
-    let root = tree.make_tree(&indents);
-
-    println!("\n=> {:#?}", parser::tokenizer::Tokenizer::tokenize_branch(&root))
-}
-
-#[allow(unused_must_use)]
-fn parse() {
-    use parser::block_tree::BlockTree;
-
-    let code = "
-if false
-    b? = false
-    b  = true
-
-    if a == false
-        more_nested = \"hello i am string\"
-else
-    a = 'no success without succ'
-    ";
-
-    println!("source: \n{}", code);
-
-    let mut tree = BlockTree::new(code, 0);
+    let mut tree = BlockTree::new(source, 0);
     let indents  = tree.collect_indents();
 
     let root = tree.make_tree(&indents);
-
-    println!("root: => {:#?}", parser::tokenizer::Tokenizer::tokenize_branch(&root));
 
     let mut parser = parser::ast::Parser::from(
              parser::tokenizer::Tokenizer::from(
@@ -71,17 +62,35 @@ else
                 ),
         );
 
-    println!(
-            "\n=> {:#?}",
-            match parser.parse() {
-                Ok(c)  => c,
-                Err(e) => panic!(e),
-            },
-        )
+    match parser.parse() {
+        Ok(c)  => format!("{:#?}", c),
+        Err(e) => panic!(e),
+    }
+}
+
+#[allow(unused_must_use)]
+fn file<'a>(source: &str) -> String {
+     let mut source_file = match File::open(source) {
+        Ok(f)  => f,
+        Err(_) => panic!("failed to open path: {}", source),
+    };
+
+    let mut source_buffer = String::new();
+    source_file.read_to_string(&mut source_buffer).unwrap();
+
+    translate(&source_buffer)
 }
 
 fn main() {
-    //tree();
-    //tokenize();
-    parse()
+    let argv: Vec<String> = env::args().collect();
+
+    let args = Docopt::new(USAGE)
+                       .and_then(|d| d.argv(argv.into_iter()).parse())
+                       .unwrap_or_else(|e| e.exit());
+
+    if args.get_bool("repl") {
+        repl()
+    } else if args.get_bool("translate") {
+         println!("abstract syntax tree =>\n{}", file(args.get_str("<source>")));
+    }
 }

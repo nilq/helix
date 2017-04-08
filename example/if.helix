@@ -1,0 +1,12 @@
+# sets foo to the integral 10
+foo = 10
+
+# does things if foo is 10
+if foo == 10
+    bar = "foo is 10"
+
+    if bar == "hey"
+        # the `print` function dumps to console
+        print("hey hey")
+    else
+        print("bar is not 'hey'")
