@@ -5,7 +5,7 @@ A programming language transpiler
 
 A bunch of ideas for a chronological language based on events and simple logic concepts.
 
-### The cat
+**The cat**
 ```
 # a data structure
 struct cat

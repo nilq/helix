@@ -1,1 +1,0 @@
-/home/niql/workspaces/rust/helix/target/debug/helix-lang: /home/niql/workspaces/rust/helix/src/lib.rs /home/niql/workspaces/rust/helix/src/lexer/mod.rs /home/niql/workspaces/rust/helix/src/lexer/token.rs /home/niql/workspaces/rust/helix/src/main.rs
