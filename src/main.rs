@@ -15,6 +15,8 @@ helix language
 usage:
     helix repl
     helix translate <source>
+    helix (-h | --help)
+    helix --version
 
 options:
     -h --help   display this message
