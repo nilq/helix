@@ -1,5 +1,14 @@
+import "iostream" library
+import "string" library
+
 def test(int a)
-    return 2 + a
+	return 2 + a
 
 def main()
-    return test(5) # success
+	return test(5) # success
+
+module something
+	foo = "bar"
+
+	module inside
+		foo = "hey"

@@ -1,22 +1,9 @@
+# test.helix
 import "iostream" library
 import "string"   library
 
-module something
-	module test
-		foo = "bar"
+def test(a)
+	return 3 + a
 
-	module another_test?
-		foo = "another bar"
-
-	if true == false
-		a = 123 + 2
-
-	a = 1
-
-	if false == false
-		a = 1
-
-	module testtt
-		ayy = "1"
-
-		
+def main()
+	return test(6)
