@@ -22,6 +22,16 @@ pub enum Expression {
             Box<Expression>,
             Box<Vec<Expression>>,
         ),
+
+    Module(
+            String,
+            Box<Vec<Statement>>,
+        ),
+
+    Import(
+            String,
+            bool,
+        ),
 }
 
 #[derive(Debug, Clone)]
@@ -35,11 +45,6 @@ pub enum Statement {
             Box<Vec<Statement>>,
         ),
 
-    Module(
-            String,
-            Box<Vec<Statement>>,
-        ),
-
     If(
             Box<Expression>,
             Box<Statement>,
@@ -49,11 +54,6 @@ pub enum Statement {
             Box<Expression>,
             Box<Statement>,
             Box<Statement>,
-        ),
-
-    Import(
-            String,
-            bool,
         ),
 
     Expression(Box<Expression>),
@@ -266,6 +266,51 @@ impl Parser {
 
                     Ok(expression)
                 },
+
+            TokenType::Module => {
+                    self.tokenizer.next_token();
+
+                    let ident = self.tokenizer.current_content();
+
+                    self.tokenizer.next_token();
+
+                    let body = try!(self.block());
+
+                    Ok(
+                        Expression::Module(
+                                ident,
+                                Box::new(body),
+                            )
+                    )
+                },
+
+            TokenType::Import => {
+                    self.tokenizer.next_token();
+
+                    try!(self.tokenizer.match_current(TokenType::Text));
+
+                    let ident = self.tokenizer.current_content();
+
+                    self.tokenizer.next_token();
+
+                    if self.tokenizer.current().get_type() == TokenType::Library {
+                        return Ok(
+                            Expression::Import(
+                                    ident,
+                                    true,
+                                )
+                        )
+                    }
+
+                    self.tokenizer.prev_token();
+
+                    Ok(
+                        Expression::Import(
+                                ident,
+                                false,
+                            )
+                    )
+                },
             
             _ => Err(
                     format!("unexpected term: {:#?}", token_type)
@@ -322,52 +367,6 @@ impl Parser {
                 )
             },
 
-            TokenType::Module => {
-
-                    self.tokenizer.next_token();
-
-                    let ident = self.tokenizer.current_content();
-
-                    self.tokenizer.next_token();
-
-                    let body = try!(self.block());
-
-                    Ok(
-                        Statement::Module(
-                                ident,
-                                Box::new(body),
-                            )
-                    )
-                },
-
-            TokenType::Import => {
-                    self.tokenizer.next_token();
-
-                    try!(self.tokenizer.match_current(TokenType::Text));
-
-                    let ident = self.tokenizer.current_content();
-
-                    self.tokenizer.next_token();
-
-                    if self.tokenizer.current().get_type() == TokenType::Library {
-                        return Ok(
-                            Statement::Import(
-                                    ident,
-                                    true,
-                                )
-                        )
-                    }
-
-                    self.tokenizer.prev_token();
-
-                    Ok(
-                        Statement::Import(
-                                ident,
-                                false,
-                            )
-                    )
-                },
-
             TokenType::If => {
                     self.tokenizer.next_token();
 
@@ -402,7 +401,8 @@ impl Parser {
                             )
                     }
 
-                    self.tokenizer.next_token();
+                    self.tokenizer.prev_token();
+                    
 
                     Ok(
                         Statement::If(

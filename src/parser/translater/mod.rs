@@ -39,6 +39,8 @@ impl<'a> Environment {
                 )
         }
 
+        imports.push_str("using namespace std;\n");
+
         imports
     }
 
@@ -146,7 +148,8 @@ pub fn expression(ex: &Expression) -> CElement {
 
 pub fn statement(st: &Statement) -> Option<CElement> {
     match *st {
-        Statement::Import(ref p, ref l) => if *l {
+        Statement::Expression(ref e) => match **e {
+            Expression::Import(ref p, ref l) => if *l {
                 Some(
                         CElement::Include(
                             format!("<{}>", p)
@@ -160,22 +163,25 @@ pub fn statement(st: &Statement) -> Option<CElement> {
                     )
             },
         
-        Statement::Module(ref n, ref c) => {
-                let mut statement_stack: Vec<CElement> = Vec::new();
+            Expression::Module(ref n, ref c) => {
+                    let mut statement_stack: Vec<CElement> = Vec::new();
 
-                for s in c.iter() {
-                    if let Some(c) = statement(s) {
-                        statement_stack.push(c)
+                    for s in c.iter() {
+                        if let Some(c) = statement(s) {
+                            statement_stack.push(c)
+                        }
                     }
-                }
 
-                Some(
-                    CElement::Module(
-                            n.clone(),
-                            Box::new(statement_stack),
-                        ),
-                )
-            },
+                    Some(
+                        CElement::Module(
+                                n.clone(),
+                                Box::new(statement_stack),
+                            ),
+                    )
+                },
+            
+            _ => None,
+        },
 
         Statement::Assignment(ref n, ref r) => Some(
                 CElement::Assignment(
@@ -193,7 +199,7 @@ fn type_of(element: &CElement) -> &str {
         CElement::Float(_)   => "float",
         CElement::Integer(_) => "int",
         CElement::Boolean(_) => "bool",
-        CElement::Text(_)    => "*char[]",
+        CElement::Text(_)    => "string",
         _                    => panic!("can't infer type of element: {:?}", element),
     }
 }
