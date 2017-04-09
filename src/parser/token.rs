@@ -27,6 +27,8 @@ pub enum TokenType {
     If,
     Else,
     Module,
+    Import,
+    Library,
 
     Boolean,
     Operator,

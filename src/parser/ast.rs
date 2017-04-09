@@ -51,6 +51,11 @@ pub enum Statement {
             Box<Statement>,
         ),
 
+    Import(
+            String,
+            bool,
+        ),
+
     Expression(Box<Expression>),
 }
 
@@ -331,6 +336,34 @@ impl Parser {
                         Statement::Module(
                                 ident,
                                 Box::new(body),
+                            )
+                    )
+                },
+
+            TokenType::Import => {
+                    self.tokenizer.next_token();
+
+                    try!(self.tokenizer.match_current(TokenType::Text));
+
+                    let ident = self.tokenizer.current_content();
+
+                    self.tokenizer.next_token();
+
+                    if self.tokenizer.current().get_type() == TokenType::Library {
+                        self.tokenizer.next_token();   
+
+                        return Ok(
+                            Statement::Import(
+                                    ident,
+                                    true,
+                                )
+                        )                 
+                    }
+
+                    Ok(
+                        Statement::Import(
+                                ident,
+                                false,
                             )
                     )
                 },

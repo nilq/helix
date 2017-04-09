@@ -335,10 +335,12 @@ fn identifier(c: char) -> bool {
 fn keyword(v: &str) -> Option<TokenType> {
     match v {
         "true" |
-        "false"  => Some(TokenType::Boolean),
-        "else"   => Some(TokenType::Else),
-        "if"     => Some(TokenType::If),
-        "module" => Some(TokenType::Module),
+        "false"   => Some(TokenType::Boolean),
+        "else"    => Some(TokenType::Else),
+        "if"      => Some(TokenType::If),
+        "module"  => Some(TokenType::Module),
+        "library" => Some(TokenType::Library),
+        "import"  => Some(TokenType::Import),
         _ => None,
     }
 }
