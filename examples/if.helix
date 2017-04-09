@@ -3,5 +3,7 @@ import "string" library
 def main()
     if (1 + 1) == 2
         foo = "bar"
+    else
+        foo = "fooz"
 
     return 0

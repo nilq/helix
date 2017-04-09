@@ -14,6 +14,8 @@ pub enum CElement {
     Ident(String),
 
     If(Box<CElement>, Box<CElement>),
+    IfElse(Box<CElement>, Box<CElement>, Box<CElement>),
+
     Block(Box<Vec<CElement>>),
 
     Call(Box<CElement>, Box<Vec<CElement>>),
@@ -142,6 +144,13 @@ pub fn translate_element(ce: &CElement) -> String {
 
         CElement::If(ref e, ref c) => format!(
             "if({}) {{{}}}", translate_element(&e), translate_element(&c),
+        ),
+
+        CElement::IfElse(ref e, ref c, ref c1) => format!(
+            "if({}) {{{}}} else {{{}}}", 
+            translate_element(&e),
+            translate_element(&c),
+            translate_element(&c1),
         ),
 
         CElement::Call(ref c, ref e) => {
@@ -339,6 +348,14 @@ pub fn statement(st: &Statement) -> Option<CElement> {
                     )
             ),
 
+        Statement::IfElse(ref e, ref c, ref c1)  => Some(
+                CElement::IfElse(
+                        Box::new(expression(&**e)),
+                        Box::new(statement(&**c).unwrap()),
+                        Box::new(statement(&**c1).unwrap()),
+                    )
+            ),
+
         Statement::Block(ref c) => {
             let mut statement_stack: Vec<CElement> = Vec::new();
 
@@ -361,8 +378,6 @@ pub fn statement(st: &Statement) -> Option<CElement> {
                         Box::new(expression(&**r)),
                     ),
             ),
-        
-        _ => None,
     }
 }
 
