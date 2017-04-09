@@ -19,110 +19,67 @@ options:
 
 ## Examples
 
-**if-statements**
 ```helix
-# sets foo to the integral 10
-foo = 10
+# test.helix
+import "iostream" library
+import "string"   library
 
-# does things if foo is 10
-if foo == 10
-    bar = "foo is 10"
+def test(a)
+    return 3 + a
 
-    if bar == "hey"
-        # the `print` function dumps to console
-        print("hey hey")
-    else
-        print("bar is not 'hey'")
-```
-Output AST
-```
-abstract syntax tree =>
-[
-    Assignment(
-        "foo",
-        Integer(
-            10
-        )
-    ),
-    If(
-        Operation(
-            Integer(
-                10
-            ),
-            Equal,
-            Ident(
-                "foo"
-            )
-        ),
-        Block(
-            [
-                Assignment(
-                    "bar",
-                    Text(
-                        "foo is 10"
-                    )
-                ),
-                IfElse(
-                    Operation(
-                        Text(
-                            "hey"
-                        ),
-                        Equal,
-                        Ident(
-                            "bar"
-                        )
-                    ),
-                    Block(
-                        [
-                            Expression(
-                                Call(
-                                    Ident(
-                                        "print"
-                                    ),
-                                    [
-                                        Text(
-                                            "hey hey"
-                                        )
-                                    ]
-                                )
-                            )
-                        ]
-                    ),
-                    Block(
-                        [
-                            Expression(
-                                Call(
-                                    Ident(
-                                        "print"
-                                    ),
-                                    [
-                                        Text(
-                                            "bar is not \'hey\'"
-                                        )
-                                    ]
-                                )
-                            )
-                        ]
-                    )
-                )
-            ]
-        )
-    )
-]
+def main()
+	return test(6)
+
+module something
+	module test
+		foo = "bar"
+
+	module another_test?
+		foo = "another bar"
+
+	if true == false
+		a = 123 + 2
+
+	a = 1
+
+	if false == false
+		a = 1
+
+	module testtt
+		ayy = "1"
 ```
 
-## Draft
+```
+$ helix translate test.helix test.cpp
+```
 
-Ideas for non-parallel structure.
+```cpp
+// test.cpp
+#include <iostream>
+#include <string>
 
-**laws and events**
-```helix
-# events can be spawned onto the event-stack
-event foo(a, b)
-    print("foo spawned with: ", a, b)
+using namespace std;
 
-# rules are absolute elements on the event-stack
-rule
-    if something == true
-        foo(1, 2) # spawn foo
+auto test(int a) {
+    return (a + 3);
+}
+
+int main() {
+    return test(5);
+}
+
+namespace something {
+	namespace test {
+	    string foo = "bar";
+    }
+    namespace another_test? {
+        string foo = "another bar";
+    }
+    
+    int a = 1;
+
+    namespace testtt {
+        string ayy = "1";
+    }
+}
 ```
