@@ -1,6 +1,8 @@
 use super::ast::{
-        Expression, Statement,
+        Expression, Statement
     };
+
+use super::token::Operator;
 
 #[derive(Debug, Clone)]
 pub enum CElement {
@@ -12,7 +14,9 @@ pub enum CElement {
     Include(String),
     Module(String, Box<Vec<CElement>>),
     Assignment(String, Box<CElement>),
-} 
+
+    Operation(Box<CElement>, String, Box<CElement>),
+}
 
 #[derive(Debug, Clone)]
 pub struct Environment {
@@ -106,6 +110,17 @@ pub fn translate_element(ce: &CElement) -> String {
         CElement::Boolean(ref i) => i.to_string(),
         CElement::Text(ref i)     => format!("\"{}\"", i.to_string()),
 
+        CElement::Operation(ref l, ref o, ref r) => {
+                let mut operation = format!(
+                        "({} {} {})",
+                        translate_element(l),
+                        o.clone(),
+                        translate_element(r),
+                    );
+
+                operation
+            },
+
         CElement::Assignment(ref i, ref r) => {
                 let mut line = "".to_string();
 
@@ -138,10 +153,16 @@ pub fn translate_element(ce: &CElement) -> String {
 
 pub fn expression(ex: &Expression) -> CElement {
     match *ex {
-        Expression::Integer(ref i) => CElement::Integer(i.clone()),
-        Expression::Float(ref f)   => CElement::Float(f.clone()),
-        Expression::Text(ref f)    => CElement::Text(f.clone()),
-        Expression::Boolean(ref f) => CElement::Boolean(f.clone()),
+        Expression::Integer(ref i)                 => CElement::Integer(i.clone()),
+        Expression::Float(ref f)                   => CElement::Float(f.clone()),
+        Expression::Text(ref f)                    => CElement::Text(f.clone()),
+        Expression::Boolean(ref f)                 => CElement::Boolean(f.clone()),
+        Expression::Operation(ref l, ref o, ref r) => CElement::Operation(
+                Box::new(expression(l)),
+                operator(o).to_string(),
+                Box::new(expression(r)),
+            ),
+
         _ => panic!("unknown expression: {:?}", ex),
     }
 }
@@ -162,7 +183,7 @@ pub fn statement(st: &Statement) -> Option<CElement> {
                         )
                     )
             },
-        
+
             Expression::Module(ref n, ref c) => {
                     let mut statement_stack: Vec<CElement> = Vec::new();
 
@@ -200,6 +221,22 @@ fn type_of(element: &CElement) -> &str {
         CElement::Integer(_) => "int",
         CElement::Boolean(_) => "bool",
         CElement::Text(_)    => "string",
-        _                    => panic!("can't infer type of element: {:?}", element),
+        _                    => "double",
+    }
+}
+
+fn operator<'a>(v: &Operator) -> &'a str {
+    match *v {
+        Operator::Mul     => "*",
+        Operator::Mod     => "%",
+        Operator::Div     => "/",
+        Operator::Plus    => "+",
+        Operator::Minus   => "-",
+        Operator::Equal   => "==",
+        Operator::NEqual  => "!=",
+        Operator::Lt      => "<",
+        Operator::Gt      => ">",
+        Operator::LtEqual => "<=",
+        Operator::GtEqual => ">=",
     }
 }

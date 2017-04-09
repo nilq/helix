@@ -1,19 +1,22 @@
 import "iostream" library
 import "string"   library
 
-module test
-	foo = "bar"
+module something
+	module test
+		foo = "bar"
 
-module another_test?
-	foo = "another bar"
+	module another_test?
+		foo = "another bar"
 
-if true == false
-	a = 123
+	if true == false
+		a = 123 + 2
 
-a = 1
-
-if false == false
 	a = 1
 
-module testtt
-	ayy = "1"
+	if false == false
+		a = 1
+
+	module testtt
+		ayy = "1"
+
+		

@@ -38,6 +38,7 @@ pub enum TokenType {
 pub enum Operator {
     Mul,
     Div,
+    Mod,
     
     Plus,
     Minus,

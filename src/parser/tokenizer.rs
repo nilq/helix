@@ -366,6 +366,7 @@ fn symbol(c: char) -> Option<TokenType> {
 pub fn operator(v: &str) -> Option<(Operator, u8)> {
     match v {
         "*"  => Some((Operator::Mul,     1)),
+        "%"  => Some((Operator::Mod,     1)),
         "/"  => Some((Operator::Div,     1)),
         "+"  => Some((Operator::Plus,    2)),
         "-"  => Some((Operator::Minus,   2)),
