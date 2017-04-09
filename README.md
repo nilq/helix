@@ -30,8 +30,6 @@ def test(int a)
 	else
 		return 2 - a
 
-	return a
-
 def main()
 	return test(5) # success
 
@@ -59,8 +57,6 @@ auto test(int a) {
 	} else {
 		return (a - 2);
 	}
-
-	return a;
 }
 
 int main() {
