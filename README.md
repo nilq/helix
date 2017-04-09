@@ -22,31 +22,19 @@ options:
 ```helix
 # test.helix
 import "iostream" library
-import "string"   library
+import "string" library
 
-def test(a)
-    return 3 + a
+def test(int a)
+	return 2 + a
 
 def main()
-	return test(6)
+	return test(5) # success
 
 module something
-	module test
-		foo = "bar"
+	foo = "bar"
 
-	module another_test?
-		foo = "another bar"
-
-	if true == false
-		a = 123 + 2
-
-	a = 1
-
-	if false == false
-		a = 1
-
-	module testtt
-		ayy = "1"
+	module inside
+		foo = "hey"
 ```
 
 ```
@@ -61,25 +49,17 @@ $ helix translate test.helix test.cpp
 using namespace std;
 
 auto test(int a) {
-    return (a + 3);
+	return (a + 2);
 }
 
 int main() {
-    return test(5);
+	return test(5);
 }
 
 namespace something {
-	namespace test {
-	    string foo = "bar";
-    }
-    namespace another_test? {
-        string foo = "another bar";
-    }
-    
-    int a = 1;
-
-    namespace testtt {
-        string ayy = "1";
-    }
+	string foo = "bar";
+	namespace inside {
+		string foo = "hey";
+	}
 }
 ```
