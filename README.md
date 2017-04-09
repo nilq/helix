@@ -25,7 +25,12 @@ import "iostream" library
 import "string" library
 
 def test(int a)
-	return 2 + a
+	if a == 6
+		return 2 + a
+	else
+		return 2 - a
+
+	return a
 
 def main()
 	return test(5) # success
@@ -49,7 +54,13 @@ $ helix translate test.helix test.cpp
 using namespace std;
 
 auto test(int a) {
-	return (a + 2);
+	if((6 == a)) {
+		return (a + 2);
+	} else {
+		return (a - 2);
+	}
+
+	return a;
 }
 
 int main() {
@@ -58,6 +69,7 @@ int main() {
 
 namespace something {
 	string foo = "bar";
+	
 	namespace inside {
 		string foo = "hey";
 	}
