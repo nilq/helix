@@ -35,6 +35,11 @@ pub enum Statement {
             Box<Vec<Statement>>,
         ),
 
+    Module(
+            String,
+            Box<Vec<Statement>>,
+        ),
+
     If(
             Box<Expression>,
             Box<Statement>,
@@ -311,6 +316,24 @@ impl Parser {
                         )
                 )
             },
+
+            TokenType::Module => {
+
+                    self.tokenizer.next_token();
+
+                    let ident = self.tokenizer.current_content();
+
+                    self.tokenizer.next_token();
+
+                    let body = try!(self.block());
+
+                    Ok(
+                        Statement::Module(
+                                ident,
+                                Box::new(body),
+                            )
+                    )
+                },
 
             TokenType::If => {
                     self.tokenizer.next_token();

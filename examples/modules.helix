@@ -1,0 +1,7 @@
+module foo
+    a = 1
+    b = "hey"
+
+module bar
+    if 1 == 1
+        c = "ay"

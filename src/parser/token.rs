@@ -26,6 +26,7 @@ pub enum TokenType {
 
     If,
     Else,
+    Module,
 
     Boolean,
     Operator,
