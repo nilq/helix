@@ -8,7 +8,6 @@ pub enum Expression {
     Integer(i64),
     Float(f64),
     Text(String),
-    Null,
     Boolean(bool),
 
     Ident(String),
@@ -36,7 +35,7 @@ pub enum Expression {
 
     Function(
             String,
-            Vec<String>,
+            Vec<(String, String)>,
             Box<Vec<Statement>>,
         ),
 
@@ -335,7 +334,11 @@ impl Parser {
                     let mut args = Vec::new();
 
                     while self.tokenizer.current().get_type() == TokenType::Ident {
-                        args.push(self.tokenizer.current_content());
+                        let t = self.tokenizer.current_content();
+                        self.tokenizer.next_token();
+                        let n = self.tokenizer.current_content();
+
+                        args.push((t, n));
 
                         self.tokenizer.next_token();
 

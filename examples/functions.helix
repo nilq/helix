@@ -1,5 +1,5 @@
-def main()
-    return test() # success
+def test(int a)
+    return 2 + a
 
-def test()
-    return 2 + 5
+def main()
+    return test(5) # success

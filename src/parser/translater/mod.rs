@@ -11,12 +11,16 @@ pub enum CElement {
     Boolean(bool),
     Text(String),
 
+    Ident(String),
+
+    Call(Box<CElement>, Box<Vec<CElement>>),
+
     Include(String),
     Module(String, Box<Vec<CElement>>),
     Assignment(String, Box<CElement>),
 
     Operation(Box<CElement>, String, Box<CElement>),
-    Function(String, Vec<String>, Box<Vec<CElement>>, Option<String>),
+    Function(String, Vec<(String, String)>, Box<Vec<CElement>>, Option<String>),
 
     Return(Box<CElement>),
 }
@@ -112,9 +116,33 @@ pub fn translate_element(ce: &CElement) -> String {
         CElement::Integer(ref i)  => i.to_string(),
         CElement::Float(ref i)    => i.to_string(),
         CElement::Boolean(ref i)  => i.to_string(),
+        CElement::Ident(ref i)    => i.to_string(),
         CElement::Text(ref i)     => format!("\"{}\"", i.to_string()),
 
         CElement::Return(ref e) => format!("return {};\n", translate_element(&**e)),
+
+        CElement::Call(ref c, ref e) => {
+                let mut args = "".to_string();
+
+                let mut first = true;
+
+                for a in e.iter() {
+                    
+                    if first {
+                        first = false
+                    } else {
+                        args.push(',')
+                    }
+
+                    args.push_str(
+                            &translate_element(&a)
+                        )
+                }
+
+                format!(
+                    "{}({})", translate_element(&c), args,
+                )
+            },
 
         CElement::Function(ref n, ref a, ref c, ref t) => {
                 let mut body = "".to_string();
@@ -125,48 +153,34 @@ pub fn translate_element(ce: &CElement) -> String {
                         )
                 }
 
-                let mut template = "template<".to_string();
                 let mut args     = "".to_string();
-
                 let mut accum: usize = 0;
 
-                for n in a.iter() {
+                for &(ref t, ref n) in a.iter() {
                     if accum > 0 {
-                        template.push_str(",");
                         args.push_str(",")
                     }
-
-                    let t = format!("TTT{}", accum);
-
-                    template.push_str(&format!("class {}", &t));
 
                     args.push_str(&format!("{} {}", t, n));
 
                     accum += 1
                 }
 
-                template.push_str(">");
-
                 let retty = match *t {
-                        Some(ref rt) => if rt == "auto" {
-                                            "double".to_string()
-                                        } else {
-                                            rt.to_string()
-                                        },
-
-                        None     => "void".to_string(),
-                    };
+                    Some(ref rt) => rt.to_string(),
+                    None         => "void".to_string(),
+                };
 
                 match n.as_str() {
                     "main" => format!(
-                            "int {}({}) {{\n\t{}}}",
-                            n, args, body,
+                            "int main({}) {{\n\t{}}}",
+                            args, body,
                         ),
-
+                    
                     _ => format!(
-                            "{}\nauto {}({}) -> {} {{\n\t{}}}",
-                            template, n, args, retty, body,
-                        )
+                            "{} {}({}) {{\n\t{}}}",
+                            retty, n, args, body,
+                        ),
                 }
             },
 
@@ -213,7 +227,21 @@ pub fn expression(ex: &Expression) -> CElement {
         Expression::Float(ref f)                   => CElement::Float(f.clone()),
         Expression::Text(ref f)                    => CElement::Text(f.clone()),
         Expression::Boolean(ref f)                 => CElement::Boolean(f.clone()),
+        Expression::Ident(ref f)                   => CElement::Ident(f.clone()),
         Expression::Return(ref e)                  => CElement::Return(Box::new(expression(&**e))),
+
+        Expression::Call(ref e, ref c)             => {
+                let mut expression_stack: Vec<CElement> = Vec::new();
+
+                for s in c.iter() {
+                    expression_stack.push(expression(s))
+                }
+
+                CElement::Call(
+                    Box::new(expression(&**e)),
+                    Box::new(expression_stack),
+                )
+            },
 
         Expression::Import(ref p, ref l) => if *l {
                 CElement::Include(
@@ -274,8 +302,6 @@ pub fn expression(ex: &Expression) -> CElement {
                 operator(o).to_string(),
                 Box::new(expression(r)),
             ),
-
-        _ => panic!("unknown expression: {:?}", ex),
     }
 }
 
