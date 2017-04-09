@@ -1,0 +1,45 @@
+# Helix syntax highlighting for Micro.
+# ~/.config/micro/syntax/helix.micro
+# Date: 04-09-17
+
+syntax "helix" ".*\.helix"
+
+# Statements
+
+# External files
+color preproc "(\b(import|library)|%q|%!|%Q|%r|%x)\b"
+
+# Keywords
+color statement "\b(print)\b"
+
+# Flow control
+color statement "\b(if|else|module)\b"
+
+# Methods
+# color statement "\.\b(.+?)\b"
+
+# false, true
+color constant.bool "\b(false|true)\b"
+
+# Numbers
+color constant.number "\b([0-9]+)\b"
+
+# Symbols
+color symbol "(\(|\)|\[|\]|\{|\}|\*|/|%|\+|-|\^|>|<|=|!|,)"
+color special "(->|\.\.\.)"
+
+# Classes
+color constant "(^)\b(\S+?)\b\:"
+
+# Strings
+color constant.string "\"(\\.|[^\\\"])*\"|'(\\.|[^\\'])*'"
+
+# Multiline strings
+color constant.string start="\s*(\"\"\")" end="(\"\"\")"
+color constant.string start="\s*(''')" end="(''')"
+
+# Escapes
+color special "\\[0-7][0-7][0-7]|\\x[0-9a-fA-F][0-9a-fA-F]|\\[abefnrs]|(\\c|\\C-|\\M-|\\M-\\C-)."
+
+# Comment
+color comment "#.*$"
