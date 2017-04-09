@@ -1,0 +1,7 @@
+import "stdio.h" library
+import "string"  library
+
+def main()
+	printf("hello helix")
+
+	return 0

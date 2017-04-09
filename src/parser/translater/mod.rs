@@ -181,8 +181,8 @@ pub fn translate_element(ce: &CElement) -> String {
 
                 for e in c.iter() {
                     body.push_str(
-                            &translate_element(&e)
-                        )
+                            &format!("{};\n", translate_element(&e))
+                        );
                 }
 
                 let mut args     = "".to_string();
