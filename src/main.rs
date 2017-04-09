@@ -8,6 +8,7 @@ use std::fs::File;
 use std::env;
 
 pub mod parser;
+use parser::ast::Statement;
 
 const USAGE: &'static str = "
 helix language
@@ -40,7 +41,7 @@ fn repl() {
                     std::process::exit(0)
                 }
                 
-                println!("=>\n{}", translate(&input_line));
+                println!("=>\n{:#?}", parse(&input_line));
             },
 
             Err(e) => panic!(e),
@@ -48,7 +49,7 @@ fn repl() {
     }
 }
 
-fn translate(source: &str) -> String {
+fn parse(source: &str) -> Vec<Statement> {
     use parser::block_tree::BlockTree;
 
     let mut tree = BlockTree::new(source, 0);
@@ -65,8 +66,22 @@ fn translate(source: &str) -> String {
         );
 
     match parser.parse() {
-        Ok(c)  => format!("{:#?}", c),
+        Ok(c)  => c,
         Err(e) => panic!(e),
+    }
+}
+
+fn translate(ast: Vec<Statement>) {
+    use parser::translater::Translater;
+
+    let transpiler = Translater::new("test".to_string());
+
+    println!("\ntranspiled =>\n");
+
+    for s in ast.iter() {
+        if let Some(c) = transpiler.statement(s.clone()) {
+            println!("{:#?}", c);
+        }
     }
 }
 
@@ -80,7 +95,7 @@ fn file<'a>(source: &str) -> String {
     let mut source_buffer = String::new();
     source_file.read_to_string(&mut source_buffer).unwrap();
 
-    translate(&source_buffer)
+    source_buffer
 }
 
 fn main() {
@@ -93,6 +108,7 @@ fn main() {
     if args.get_bool("repl") {
         repl()
     } else if args.get_bool("translate") {
-         println!("abstract syntax tree =>\n{}", file(args.get_str("<source>")));
+         println!("\nabstract syntax tree =>\n{:#?}", parse(&file(args.get_str("<source>"))));
+         translate(parse(&file(args.get_str("<source>"))))
     }
 }

@@ -350,14 +350,13 @@ impl Parser {
                     self.tokenizer.next_token();
 
                     if self.tokenizer.current().get_type() == TokenType::Library {
-                        self.tokenizer.next_token();   
-
+                          
                         return Ok(
                             Statement::Import(
                                     ident,
                                     true,
                                 )
-                        )                 
+                        )
                     }
 
                     Ok(
