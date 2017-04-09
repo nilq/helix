@@ -16,13 +16,16 @@ pub enum CElement {
     Assignment(String, Box<CElement>),
 
     Operation(Box<CElement>, String, Box<CElement>),
+    Function(String, Vec<String>, Box<Vec<CElement>>, Option<String>),
+
+    Return(Box<CElement>),
 }
 
 #[derive(Debug, Clone)]
 pub struct Environment {
     title:   String,
     imports: Vec<String>,
-    pub modules: Vec<CElement>,
+    pub global: Vec<CElement>,
 }
 
 impl<'a> Environment {
@@ -30,7 +33,7 @@ impl<'a> Environment {
         Environment {
             title:   title,
             imports: Vec::new(),
-            modules: Vec::new(),
+            global: Vec::new(),
         }
     }
 
@@ -48,16 +51,16 @@ impl<'a> Environment {
         imports
     }
 
-    pub fn translate_modules(&mut self) -> String {
-        let mut modules = "".to_string();
+    pub fn translate_global(&mut self) -> String {
+        let mut global = "".to_string();
 
-        for module in self.modules.iter() {
-            modules.push_str(
+        for module in self.global.iter() {
+            global.push_str(
                     &translate_element(module),
                 )
         }
 
-        modules
+        global
     }
 
     pub fn import(&mut self, element: String) {
@@ -82,7 +85,8 @@ impl Translater {
             if let Some(c) = statement(s) {
                 match c {
                     CElement::Include(i)   => self.environment.import(i),
-                    CElement::Module(_, _) => self.environment.modules.push(c),
+                    CElement::Function(_, _, _, _)
+                    | CElement::Module(_, _) => self.environment.global.push(c),
                     _ => continue,
                 }
             }
@@ -93,7 +97,7 @@ impl Translater {
         let mut source = "".to_string();
 
         source.push_str(&self.environment.translate_imports());
-        source.push_str(&self.environment.translate_modules());
+        source.push_str(&self.environment.translate_global());
 
         source
     }
@@ -107,19 +111,71 @@ pub fn translate_element(ce: &CElement) -> String {
     return match *ce {
         CElement::Integer(ref i)  => i.to_string(),
         CElement::Float(ref i)    => i.to_string(),
-        CElement::Boolean(ref i) => i.to_string(),
+        CElement::Boolean(ref i)  => i.to_string(),
         CElement::Text(ref i)     => format!("\"{}\"", i.to_string()),
 
-        CElement::Operation(ref l, ref o, ref r) => {
-                let mut operation = format!(
-                        "({} {} {})",
-                        translate_element(l),
-                        o.clone(),
-                        translate_element(r),
-                    );
+        CElement::Return(ref e) => format!("return {};\n", translate_element(&**e)),
 
-                operation
+        CElement::Function(ref n, ref a, ref c, ref t) => {
+                let mut body = "".to_string();
+
+                for e in c.iter() {
+                    body.push_str(
+                            &translate_element(&e)
+                        )
+                }
+
+                let mut template = "template<".to_string();
+                let mut args     = "".to_string();
+
+                let mut accum: usize = 0;
+
+                for n in a.iter() {
+                    if accum > 0 {
+                        template.push_str(",");
+                        args.push_str(",")
+                    }
+
+                    let t = format!("TTT{}", accum);
+
+                    template.push_str(&format!("class {}", &t));
+
+                    args.push_str(&format!("{} {}", t, n));
+
+                    accum += 1
+                }
+
+                template.push_str(">");
+
+                let retty = match *t {
+                        Some(ref rt) => if rt == "auto" {
+                                            "double".to_string()
+                                        } else {
+                                            rt.to_string()
+                                        },
+
+                        None     => "void".to_string(),
+                    };
+
+                match n.as_str() {
+                    "main" => format!(
+                            "int {}({}) {{\n\t{}}}",
+                            n, args, body,
+                        ),
+
+                    _ => format!(
+                            "{}\nauto {}({}) -> {} {{\n\t{}}}",
+                            template, n, args, retty, body,
+                        )
+                }
             },
+
+        CElement::Operation(ref l, ref o, ref r) => format!(
+                "({} {} {})",
+                translate_element(l),
+                o.clone(),
+                translate_element(r),
+            ),
 
         CElement::Assignment(ref i, ref r) => {
                 let mut line = "".to_string();
@@ -157,6 +213,62 @@ pub fn expression(ex: &Expression) -> CElement {
         Expression::Float(ref f)                   => CElement::Float(f.clone()),
         Expression::Text(ref f)                    => CElement::Text(f.clone()),
         Expression::Boolean(ref f)                 => CElement::Boolean(f.clone()),
+        Expression::Return(ref e)                  => CElement::Return(Box::new(expression(&**e))),
+
+        Expression::Import(ref p, ref l) => if *l {
+                CElement::Include(
+                    format!("<{}>", p)
+                )
+            } else {
+                CElement::Include(
+                    format!("\"{}\"", p)
+                )
+            },
+
+        Expression::Module(ref n, ref c) => {
+                let mut statement_stack: Vec<CElement> = Vec::new();
+
+                for s in c.iter() {
+                    if let Some(c) = statement(s) {
+                        statement_stack.push(c)
+                    }
+                }
+
+                CElement::Module(
+                    n.clone(),
+                    Box::new(statement_stack),
+                )
+            },
+
+        Expression::Function(ref n, ref a, ref c)  => {
+                let mut statement_stack: Vec<CElement> = Vec::new();
+
+                let mut retty = None;
+
+                for s in c.iter() {
+                    if let Some(c) = statement(s) {
+
+                        let expr = match c.clone() {
+                                CElement::Return(e) => Some(e),
+                                _ => None,
+                            };
+
+                        if let Some(e) = expr {
+                            retty = Some(type_of(&*e).to_string())
+                        }
+
+                        statement_stack.push(c)
+                    }
+                }
+
+                CElement::Function(
+                    n.clone(),
+                    a.clone(),
+                    Box::new(statement_stack),
+                    retty,
+                )
+            },
+
         Expression::Operation(ref l, ref o, ref r) => CElement::Operation(
                 Box::new(expression(l)),
                 operator(o).to_string(),
@@ -169,40 +281,7 @@ pub fn expression(ex: &Expression) -> CElement {
 
 pub fn statement(st: &Statement) -> Option<CElement> {
     match *st {
-        Statement::Expression(ref e) => match **e {
-            Expression::Import(ref p, ref l) => if *l {
-                Some(
-                        CElement::Include(
-                            format!("<{}>", p)
-                        )
-                    )
-            } else {
-                Some(
-                        CElement::Include(
-                            format!("\"{}\"", p)
-                        )
-                    )
-            },
-
-            Expression::Module(ref n, ref c) => {
-                    let mut statement_stack: Vec<CElement> = Vec::new();
-
-                    for s in c.iter() {
-                        if let Some(c) = statement(s) {
-                            statement_stack.push(c)
-                        }
-                    }
-
-                    Some(
-                        CElement::Module(
-                                n.clone(),
-                                Box::new(statement_stack),
-                            ),
-                    )
-                },
-            
-            _ => None,
-        },
+        Statement::Expression(ref e) => Some(expression(&**e)),
 
         Statement::Assignment(ref n, ref r) => Some(
                 CElement::Assignment(
@@ -217,11 +296,11 @@ pub fn statement(st: &Statement) -> Option<CElement> {
 
 fn type_of(element: &CElement) -> &str {
     match *element {
-        CElement::Float(_)   => "float",
-        CElement::Integer(_) => "int",
-        CElement::Boolean(_) => "bool",
         CElement::Text(_)    => "string",
-        _                    => "double",
+        CElement::Boolean(_) => "bool",
+        CElement::Integer(_) => "int",
+        CElement::Float(_)   => "float",
+        _                    => "auto",
     }
 }
 

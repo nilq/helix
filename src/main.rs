@@ -83,6 +83,7 @@ fn translate(ast: Vec<Statement>) -> String{
     transpiler.translate()
 }
 
+#[allow(unused_must_use)]
 fn write(content: &str, destination: &str) {
     let path = Path::new(destination);
 

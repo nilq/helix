@@ -30,6 +30,7 @@ pub enum TokenType {
     Import,
     Library,
     Def,
+    Return,
 
     Boolean,
     Operator,

@@ -1,2 +1,5 @@
-def main(a, b)
-    return 1 # success
+def main()
+    return test() # success
+
+def test()
+    return 2 + 5

@@ -8,6 +8,7 @@ pub enum Expression {
     Integer(i64),
     Float(f64),
     Text(String),
+    Null,
     Boolean(bool),
 
     Ident(String),
@@ -38,6 +39,8 @@ pub enum Expression {
             Vec<String>,
             Box<Vec<Statement>>,
         ),
+
+    Return(Box<Expression>),
 }
 
 #[derive(Debug, Clone)]
@@ -355,6 +358,16 @@ impl Parser {
                             )
                     )
                 },
+
+            TokenType::Return => {
+                    self.tokenizer.next_token();
+
+                    Ok(
+                        Expression::Return(
+                                Box::new(try!(self.expression()))
+                            )
+                    )
+                },
             
             _ => Err(
                     format!("unexpected term: {:#?}", token_type)
@@ -447,7 +460,6 @@ impl Parser {
 
                     self.tokenizer.prev_token();
                     
-
                     Ok(
                         Statement::If(
                                 Box::new(condition),
