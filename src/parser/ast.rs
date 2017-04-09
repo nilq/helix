@@ -30,7 +30,7 @@ pub enum Statement {
             String,
             Box<Expression>,
         ),
-    
+
     Block(
             Box<Vec<Statement>>,
         ),
@@ -350,7 +350,6 @@ impl Parser {
                     self.tokenizer.next_token();
 
                     if self.tokenizer.current().get_type() == TokenType::Library {
-                          
                         return Ok(
                             Statement::Import(
                                     ident,
@@ -358,6 +357,8 @@ impl Parser {
                                 )
                         )
                     }
+
+                    self.tokenizer.prev_token();
 
                     Ok(
                         Statement::Import(

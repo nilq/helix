@@ -3,9 +3,11 @@ use          docopt::Docopt;
 
 use std::io;
 use std::io::prelude::*;
+use std::error::Error;
 
 use std::fs::File;
 use std::env;
+use std::path::Path;
 
 pub mod parser;
 use parser::ast::Statement;
@@ -15,7 +17,7 @@ helix language
 
 usage:
     helix repl
-    helix translate <source>
+    helix translate <source> <destination>
     helix (-h | --help)
     helix --version
 
@@ -71,18 +73,25 @@ fn parse(source: &str) -> Vec<Statement> {
     }
 }
 
-fn translate(ast: Vec<Statement>) {
+fn translate(ast: Vec<Statement>) -> String{
     use parser::translater::Translater;
 
-    let transpiler = Translater::new("test".to_string());
+    let mut transpiler = Translater::new("test".to_string());
+    
+    transpiler.make_environment(ast);
 
-    println!("\ntranspiled =>\n");
+    transpiler.translate()
+}
 
-    for s in ast.iter() {
-        if let Some(c) = transpiler.statement(s.clone()) {
-            println!("{:#?}", c);
-        }
-    }
+fn write(content: &str, destination: &str) {
+    let path = Path::new(destination);
+
+    let mut file = match File::create(&path) {
+            Ok(f)  => f,
+            Err(e) => panic!("failed to create file: {}: {}", destination, e.description()),
+        };
+    
+    file.write_all(content.as_bytes());
 }
 
 #[allow(unused_must_use)]
@@ -109,6 +118,8 @@ fn main() {
         repl()
     } else if args.get_bool("translate") {
          println!("\nabstract syntax tree =>\n{:#?}", parse(&file(args.get_str("<source>"))));
-         translate(parse(&file(args.get_str("<source>"))))
+         println!("transpiled =>\n{}", translate(parse(&file(args.get_str("<source>")))));
+
+         write(&translate(parse(&file(args.get_str("<source>")))), args.get_str("<destination>"))
     }
 }
