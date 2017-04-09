@@ -13,6 +13,9 @@ pub enum CElement {
 
     Ident(String),
 
+    If(Box<CElement>, Box<CElement>),
+    Block(Box<Vec<CElement>>),
+
     Call(Box<CElement>, Box<Vec<CElement>>),
 
     Include(String),
@@ -120,6 +123,26 @@ pub fn translate_element(ce: &CElement) -> String {
         CElement::Text(ref i)     => format!("\"{}\"", i.to_string()),
 
         CElement::Return(ref e) => format!("return {};\n", translate_element(&**e)),
+
+        CElement::Block(ref c) => {
+
+                let mut block = "".to_string();
+
+                for e in c.iter() {
+                    block.push_str(
+                            &translate_element(&e)
+                        )
+                }
+
+                format!(
+                        "{}",
+                        block,
+                    )
+            },
+
+        CElement::If(ref e, ref c) => format!(
+            "if({}) {{{}}}", translate_element(&e), translate_element(&c),
+        ),
 
         CElement::Call(ref c, ref e) => {
                 let mut args = "".to_string();
@@ -308,6 +331,29 @@ pub fn expression(ex: &Expression) -> CElement {
 pub fn statement(st: &Statement) -> Option<CElement> {
     match *st {
         Statement::Expression(ref e) => Some(expression(&**e)),
+
+        Statement::If(ref e, ref c)  => Some(
+                CElement::If(
+                        Box::new(expression(&**e)),
+                        Box::new(statement(&**c).unwrap()),
+                    )
+            ),
+
+        Statement::Block(ref c) => {
+            let mut statement_stack: Vec<CElement> = Vec::new();
+
+            for s in c.iter() {
+                if let Some(c) = statement(s) {
+                    statement_stack.push(c)
+                }
+            }
+
+            Some(
+                CElement::Block(
+                        Box::new(statement_stack)
+                    )
+            )
+        }
 
         Statement::Assignment(ref n, ref r) => Some(
                 CElement::Assignment(
