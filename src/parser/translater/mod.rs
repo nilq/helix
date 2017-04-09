@@ -99,8 +99,10 @@ impl Translater {
 
 pub fn translate_element(ce: &CElement) -> String {
     return match *ce {
-        CElement::Integer(ref i) => i.to_string(),
-        CElement::Float(ref i) => i.to_string(),
+        CElement::Integer(ref i)  => i.to_string(),
+        CElement::Float(ref i)    => i.to_string(),
+        CElement::Boolean(ref i) => i.to_string(),
+        CElement::Text(ref i)     => format!("\"{}\"", i.to_string()),
 
         CElement::Assignment(ref i, ref r) => {
                 let mut line = "".to_string();
