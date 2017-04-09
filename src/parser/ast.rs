@@ -333,11 +333,7 @@ impl Parser {
 
                     let mut args = Vec::new();
 
-                    let mut marker = false;
-
                     while self.tokenizer.current().get_type() == TokenType::Ident {
-                        marker = true;
-
                         let t = self.tokenizer.current_content();
                         self.tokenizer.next_token();
                         let n = self.tokenizer.current_content();
@@ -349,10 +345,6 @@ impl Parser {
                         if self.tokenizer.current().get_type() == TokenType::Comma {
                             self.tokenizer.next_token();
                         }
-                    }
-
-                    if marker {
-                        self.tokenizer.prev_token();
                     }
 
                     try!(self.tokenizer.match_current(TokenType::RParen));

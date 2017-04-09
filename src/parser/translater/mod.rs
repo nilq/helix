@@ -308,13 +308,10 @@ pub fn expression(ex: &Expression) -> CElement {
                 for s in c.iter() {
                     if let Some(c) = statement(s) {
 
-                        let expr = match c.clone() {
-                                CElement::Return(e) => Some(e),
-                                _ => None,
-                            };
+                        let expr = get_return(&c);
 
                         if let Some(e) = expr {
-                            retty = Some(type_of(&*e).to_string())
+                            retty = Some(type_of(&e).to_string())
                         }
 
                         statement_stack.push(c)
@@ -388,6 +385,31 @@ fn type_of(element: &CElement) -> &str {
         CElement::Integer(_) => "int",
         CElement::Float(_)   => "float",
         _                    => "auto",
+    }
+}
+
+fn get_return(st: &CElement) -> Option<CElement> {
+    match *st {
+        CElement::Return(ref e) => Some(*e.clone()),
+        CElement::If(_, ref c)  => get_return(c),
+        CElement::IfElse(_, ref c, ref c1)  => {
+                match get_return(c) {
+                    Some(e) => Some(e),
+                    None    => get_return(c1),
+                }
+            },
+        CElement::Block(ref c) => {
+                for e in c.iter() {
+                    return match get_return(&e) {
+                        Some(e) => Some(e),
+                        None    => continue
+                    }
+                }
+
+                None
+            },
+
+        _ => None,
     }
 }
 

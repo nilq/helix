@@ -1,5 +1,13 @@
+#include <iostream>
 #include <string>
 using namespace std;
-int main() {
-	if((2 == (1 + 1))) {string foo = "bar";} else {string foo = "fooz";}return 0;
+auto test(int a) {
+	if((6 == a)) {return (a + 2);
+} else {return (a - 2);
+}}int main() {
+	return test(5);
+}namespace something {
+	string foo = "bar";namespace inside {
+	string foo = "hey";
+}
 }
