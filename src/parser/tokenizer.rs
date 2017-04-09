@@ -341,6 +341,7 @@ fn keyword(v: &str) -> Option<TokenType> {
         "module"  => Some(TokenType::Module),
         "library" => Some(TokenType::Library),
         "import"  => Some(TokenType::Import),
+        "def"     => Some(TokenType::Def),
         _ => None,
     }
 }

@@ -29,6 +29,7 @@ pub enum TokenType {
     Module,
     Import,
     Library,
+    Def,
 
     Boolean,
     Operator,

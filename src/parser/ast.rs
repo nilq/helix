@@ -32,6 +32,12 @@ pub enum Expression {
             String,
             bool,
         ),
+
+    Function(
+            String,
+            Vec<String>,
+            Box<Vec<Statement>>,
+        ),
 }
 
 #[derive(Debug, Clone)]
@@ -308,6 +314,44 @@ impl Parser {
                         Expression::Import(
                                 ident,
                                 false,
+                            )
+                    )
+                },
+
+            TokenType::Def => {
+                    self.tokenizer.next_token();
+
+                    let name = self.tokenizer.current_content();
+
+                    self.tokenizer.next_token();
+
+                    try!(self.tokenizer.match_current(TokenType::LParen));
+
+                    self.tokenizer.next_token();
+
+                    let mut args = Vec::new();
+
+                    while self.tokenizer.current().get_type() == TokenType::Ident {
+                        args.push(self.tokenizer.current_content());
+
+                        self.tokenizer.next_token();
+
+                        if self.tokenizer.current().get_type() == TokenType::Comma {
+                            self.tokenizer.next_token();
+                        }
+                    }
+
+                    try!(self.tokenizer.match_current(TokenType::RParen));
+
+                    self.tokenizer.next_token();
+
+                    let body = try!(self.block());
+
+                    Ok(
+                        Expression::Function(
+                                name,
+                                args,
+                                Box::new(body),
                             )
                     )
                 },
