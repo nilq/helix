@@ -10,10 +10,10 @@ syntax "helix" ".*\.helix"
 color preproc "(\b(import|library)|%q|%!|%Q|%r|%x)\b"
 
 # Keywords
-color statement "\b(print)\b"
+color statement "\b(printf)\b"
 
 # Flow control
-color statement "\b(if|else|module)\b"
+color statement "\b(if|else|module|def)\b"
 
 # Methods
 # color statement "\.\b(.+?)\b"

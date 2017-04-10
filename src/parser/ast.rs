@@ -39,6 +39,16 @@ pub enum Expression {
             Box<Vec<Statement>>,
         ),
 
+    IndexDot(
+            Box<Expression>,
+            Box<Expression>,
+        ),
+
+    IndexColon(
+            Box<Expression>,
+            Box<Expression>,
+        ),
+
     Return(Box<Expression>),
 }
 
@@ -207,6 +217,30 @@ impl Parser {
         )
     }
 
+    fn dot(&mut self, id: Expression) -> Result<Expression, String> {
+        self.tokenizer.next_token();
+
+        try!(self.tokenizer.match_current(TokenType::Ident));
+
+        let index = try!(self.term());
+
+        Ok(
+            Expression::IndexDot(Box::new(id), Box::new(index))
+        )
+    }
+
+    fn colon(&mut self, id: Expression) -> Result<Expression, String> {
+        self.tokenizer.next_token();
+
+        try!(self.tokenizer.match_current(TokenType::Ident));
+
+        let index = try!(self.term());
+
+        Ok(
+            Expression::IndexColon(Box::new(id), Box::new(index))
+        )
+    }
+
     fn term(&mut self) -> Result<Expression, String> {
         let token_type = self.tokenizer.current().get_type();
         
@@ -243,6 +277,8 @@ impl Parser {
                     if self.tokenizer.next_token() {
                         return match self.tokenizer.current().get_type() {
                             TokenType::Operator  => self.operation(ident),
+                            TokenType::Period    => self.dot(ident),
+                            TokenType::Colon     => self.colon(ident),
                             TokenType::LParen    => self.call(ident),
                             _                    => {
                                     self.tokenizer.prev_token();

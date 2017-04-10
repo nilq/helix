@@ -1,7 +1,25 @@
 import "stdio.h" library
-import "string"  library
+import "string" library
+
+def test(int a)
+	if a == 6
+		return 2 + a
+	else
+		return 2 - a
+
+module something
+	foo = "bar"
+
+	def bar()
+		return "bar"
+
+	module inside
+		foo = "hey"
 
 def main()
-	printf("hello helix")
+
+	test = something:bar()
+
+	printf("%s and %s\n", test.c_str(), "bar")
 
 	return 0

@@ -20,6 +20,9 @@ pub enum CElement {
 
     Call(Box<CElement>, Box<Vec<CElement>>),
 
+    IndexDot(Box<CElement>, Box<CElement>),
+    IndexColon(Box<CElement>, Box<CElement>),
+
     Include(String),
     Module(String, Box<Vec<CElement>>),
     Assignment(String, Box<CElement>),
@@ -126,8 +129,10 @@ pub fn translate_element(ce: &CElement) -> String {
 
         CElement::Return(ref e) => format!("return {};\n", translate_element(&**e)),
 
-        CElement::Block(ref c) => {
+        CElement::IndexDot(ref a, ref b) => format!("{}.{}", translate_element(&**a), translate_element(&**b)),
+        CElement::IndexColon(ref a, ref b) => format!("{}::{}", translate_element(&**a), translate_element(&**b)),
 
+        CElement::Block(ref c) => {
                 let mut block = "".to_string();
 
                 for e in c.iter() {
@@ -261,6 +266,16 @@ pub fn expression(ex: &Expression) -> CElement {
         Expression::Boolean(ref f)                 => CElement::Boolean(f.clone()),
         Expression::Ident(ref f)                   => CElement::Ident(f.clone()),
         Expression::Return(ref e)                  => CElement::Return(Box::new(expression(&**e))),
+        
+        Expression::IndexDot(ref a, ref b)         => CElement::IndexDot(
+                Box::new(expression(&**a)),
+                Box::new(expression(&**b)),
+            ),
+
+        Expression::IndexColon(ref a, ref b)       => CElement::IndexColon(
+                Box::new(expression(&**a)),
+                Box::new(expression(&**b)),
+            ),
 
         Expression::Call(ref e, ref c)             => {
                 let mut expression_stack: Vec<CElement> = Vec::new();
@@ -310,7 +325,7 @@ pub fn expression(ex: &Expression) -> CElement {
 
                         let expr = get_return(&c);
 
-                        if let Some(e) = expr {
+                        if let Some(e)  = expr {
                             retty = Some(type_of(&e).to_string())
                         }
 
