@@ -1,6 +1,8 @@
 extern crate docopt;
 use          docopt::Docopt;
 
+use std::process::Command;
+
 use std::io;
 use std::io::prelude::*;
 use std::error::Error;
@@ -16,8 +18,8 @@ const USAGE: &'static str = "
 helix language
 
 usage:
-    helix repl
-    helix translate <source> <destination>
+    helix run <source>
+    helix build <source> <destination>
     helix (-h | --help)
     helix --version
 
@@ -108,6 +110,13 @@ fn file<'a>(source: &str) -> String {
     source_buffer
 }
 
+fn binary(source: &str, destination: &str) {
+    Command::new("g++")
+            .args(&[source, "-o", destination])
+            .spawn()
+            .expect("failed to compile binary!");
+}
+
 fn main() {
     let argv: Vec<String> = env::args().collect();
 
@@ -115,12 +124,19 @@ fn main() {
                        .and_then(|d| d.argv(argv.into_iter()).parse())
                        .unwrap_or_else(|e| e.exit());
 
-    if args.get_bool("repl") {
-        repl()
-    } else if args.get_bool("translate") {
-         println!("\nabstract syntax tree =>\n{:#?}", parse(&file(args.get_str("<source>"))));
-         println!("transpiled =>\n{}", translate(parse(&file(args.get_str("<source>")))));
+    if args.get_bool("build") {
+        let source = args.get_str("<source>");
+        let destination = args.get_str("<destination>");
 
-         write(&translate(parse(&file(args.get_str("<source>")))), args.get_str("<destination>"))
+        write(&translate(parse(&file(source))), destination);
+        binary(destination, "out")
+    } else if args.get_bool("run") {
+        let source = args.get_str("<source>");
+        let destination = "tmp.cpp";
+
+        write(&translate(parse(&file(source))), destination);
+        binary(destination, "out");
+
+        Command::new("./").arg("out").spawn().expect("failed to execute binary");
     }
 }
