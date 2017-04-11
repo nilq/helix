@@ -20,11 +20,13 @@ pub enum CElement {
 
     Call(Box<CElement>, Box<Vec<CElement>>),
 
-    IndexDot(Box<CElement>, Box<CElement>),
-    IndexColon(Box<CElement>, Box<CElement>),
+    IndexDot(Box<CElement>, String),
+    IndexColon(Box<CElement>, String),
 
     Include(String),
     Module(String, Box<Vec<CElement>>),
+    Struct(String, Box<Vec<CElement>>),
+    Typed(Box<CElement>, Box<CElement>),
     Declaration(String, Box<CElement>),
     Assignment(String, Box<CElement>),
 
@@ -130,8 +132,8 @@ pub fn translate_element(ce: &CElement) -> String {
 
         CElement::Return(ref e) => format!("return {};\n", translate_element(&**e)),
 
-        CElement::IndexDot(ref a, ref b) => format!("{}.{}", translate_element(&**a), translate_element(&**b)),
-        CElement::IndexColon(ref a, ref b) => format!("{}::{}", translate_element(&**a), translate_element(&**b)),
+        CElement::IndexDot(ref a, ref b) => format!("{}.{}", translate_element(&**a), b),
+        CElement::IndexColon(ref a, ref b) => format!("{}::{}", translate_element(&**a), b),
 
         CElement::Block(ref c) => {
                 let mut block = "".to_string();
@@ -249,6 +251,16 @@ pub fn translate_element(ce: &CElement) -> String {
                 line
             },
 
+        CElement::Typed(ref i, ref r) => {
+                let mut line = "".to_string();
+
+                line.push_str(
+                        &format!("{} {};", translate_element(&**r), translate_element(&**i))
+                    );
+
+                line
+            },
+
         CElement::Module(ref n, ref c) => {
 
                 let mut module = "".to_string();
@@ -265,6 +277,22 @@ pub fn translate_element(ce: &CElement) -> String {
                     )
             },
 
+        CElement::Struct(ref n, ref c) => {
+
+                let mut structure = "".to_string();
+
+                for e in c.iter() {
+                    structure.push_str(
+                            &translate_element(&e)
+                        )
+                }
+
+                format!(
+                        "struct {} {{\n\t{}\n}};",
+                        n, structure,
+                    )
+            },
+
         _ => panic!("unknown element: {:?}", ce),
     }
 }
@@ -278,14 +306,18 @@ pub fn expression(ex: &Expression) -> CElement {
         Expression::Ident(ref f)                   => CElement::Ident(f.clone()),
         Expression::Return(ref e)                  => CElement::Return(Box::new(expression(&**e))),
         
+        Expression::Typed(ref r, ref f)            => CElement::Typed(
+                Box::new(expression(&**r)), Box::new(expression(&**f)),
+            ),
+
         Expression::IndexDot(ref a, ref b)         => CElement::IndexDot(
                 Box::new(expression(&**a)),
-                Box::new(expression(&**b)),
+                b.clone(),
             ),
 
         Expression::IndexColon(ref a, ref b)       => CElement::IndexColon(
                 Box::new(expression(&**a)),
-                Box::new(expression(&**b)),
+                b.clone(),
             ),
 
         Expression::Call(ref e, ref c)             => {
@@ -321,6 +353,21 @@ pub fn expression(ex: &Expression) -> CElement {
                 }
 
                 CElement::Module(
+                    n.clone(),
+                    Box::new(statement_stack),
+                )
+            },
+
+        Expression::Struct(ref n, ref c) => {
+                let mut statement_stack: Vec<CElement> = Vec::new();
+
+                for s in c.iter() {
+                    if let Some(c) = statement(s) {
+                        statement_stack.push(c)
+                    }
+                }
+
+                CElement::Struct(
                     n.clone(),
                     Box::new(statement_stack),
                 )

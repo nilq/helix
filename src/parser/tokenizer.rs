@@ -318,8 +318,8 @@ fn identifier(c: char) -> bool {
 
 fn keyword(v: &str) -> Option<TokenType> {
     match v {
-        "true" |
-        "false"   => Some(TokenType::Boolean),
+          "true"
+        | "false" => Some(TokenType::Boolean),
         "else"    => Some(TokenType::Else),
         "if"      => Some(TokenType::If),
         "module"  => Some(TokenType::Module),
@@ -328,6 +328,7 @@ fn keyword(v: &str) -> Option<TokenType> {
         "def"     => Some(TokenType::Def),
         "return"  => Some(TokenType::Return),
         "let"     => Some(TokenType::Let),
+        "struct"  => Some(TokenType::Struct),
         _ => None,
     }
 }

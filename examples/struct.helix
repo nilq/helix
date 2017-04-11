@@ -1,0 +1,8 @@
+module animals
+	struct bird
+		weight: int
+
+def main()
+	birbie: animals::bird
+
+	return 0

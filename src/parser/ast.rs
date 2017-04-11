@@ -28,6 +28,16 @@ pub enum Expression {
             Box<Vec<Statement>>,
         ),
 
+    Struct(
+            String,
+            Box<Vec<Statement>>,
+        ),
+
+    Typed(
+            Box<Expression>,
+            Box<Expression>,
+        ),
+
     Import(
             String,
             bool,
@@ -41,12 +51,12 @@ pub enum Expression {
 
     IndexDot(
             Box<Expression>,
-            Box<Expression>,
+            String,
         ),
 
     IndexColon(
             Box<Expression>,
-            Box<Expression>,
+            String,
         ),
 
     Return(Box<Expression>),
@@ -227,22 +237,35 @@ impl Parser {
 
         try!(self.tokenizer.match_current(TokenType::Ident));
 
-        let index = try!(self.term());
+        let index = self.tokenizer.current_content();
 
         Ok(
-            Expression::IndexDot(Box::new(id), Box::new(index))
+            Expression::IndexDot(Box::new(id), index)
         )
     }
 
     fn colon(&mut self, id: Expression) -> Result<Expression, String> {
         self.tokenizer.next_token();
-
+        
         try!(self.tokenizer.match_current(TokenType::Ident));
 
-        let index = try!(self.term());
+        let index = self.tokenizer.current_content();
 
         Ok(
-            Expression::IndexColon(Box::new(id), Box::new(index))
+            Expression::IndexColon(Box::new(id), index)
+        )
+    }
+
+    fn typed(&mut self, id: Expression) -> Result<Expression, String> {
+        try!(self.tokenizer.match_current(TokenType::Ident));
+        
+        let ident = try!(self.term());
+
+        Ok(
+            Expression::Typed(
+                    Box::new(id),
+                    Box::new(ident),
+                )
         )
     }
 
@@ -283,7 +306,14 @@ impl Parser {
                         return match self.tokenizer.current().get_type() {
                             TokenType::Operator  => self.operation(ident),
                             TokenType::Period    => self.dot(ident),
-                            TokenType::Colon     => self.colon(ident),
+                            TokenType::Colon     => {
+                                    self.tokenizer.next_token();
+                                    if self.tokenizer.current().get_type() == TokenType::Colon {
+                                        self.colon(ident)
+                                    } else {
+                                        self.typed(ident)
+                                    }
+                                },
                             TokenType::LParen    => self.call(ident),
                             _                    => {
                                     self.tokenizer.prev_token();
@@ -327,6 +357,23 @@ impl Parser {
 
                     Ok(
                         Expression::Module(
+                                ident,
+                                Box::new(body),
+                            )
+                    )
+                },
+
+            TokenType::Struct => {
+                    self.tokenizer.next_token();
+
+                    let ident = self.tokenizer.current_content();
+
+                    self.tokenizer.next_token();
+
+                    let body = try!(self.block());
+
+                    Ok(
+                        Expression::Struct(
                                 ident,
                                 Box::new(body),
                             )
@@ -475,7 +522,7 @@ impl Parser {
 
                     self.tokenizer.next_token();
 
-                    self.tokenizer.match_current(TokenType::Assign);
+                    try!(self.tokenizer.match_current(TokenType::Assign));
 
                     self.tokenizer.next_token();
 

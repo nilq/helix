@@ -17,7 +17,6 @@ module something
 		foo = "hey"
 
 def main()
-
 	test = something:bar()
 
 	printf("%s and %s\n", test.c_str(), "bar")
