@@ -31,6 +31,7 @@ pub enum TokenType {
     Library,
     Def,
     Return,
+    Let,
 
     Boolean,
     Operator,

@@ -17,7 +17,7 @@ pub enum Expression {
             Operator,
             Box<Expression>,
         ),
-    
+
     Call(
             Box<Expression>,
             Box<Vec<Expression>>,
@@ -55,6 +55,11 @@ pub enum Expression {
 #[derive(Debug, Clone)]
 pub enum Statement {
     Assignment(
+            String,
+            Box<Expression>,
+        ),
+
+    Declaration(
             String,
             Box<Expression>,
         ),
@@ -462,6 +467,27 @@ impl Parser {
                         )
                 )
             },
+
+            TokenType::Let => {
+                    self.tokenizer.next_token();
+
+                    let ident = self.tokenizer.current_content();
+
+                    self.tokenizer.next_token();
+
+                    self.tokenizer.match_current(TokenType::Assign);
+
+                    self.tokenizer.next_token();
+
+                    let expression = try!(self.expression());
+
+                    Ok(
+                        Statement::Declaration(
+                                ident,
+                                Box::new(expression),
+                            ),
+                    )
+                },
 
             TokenType::If => {
                     self.tokenizer.next_token();

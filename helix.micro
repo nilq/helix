@@ -13,7 +13,7 @@ color preproc "(\b(import|library)|%q|%!|%Q|%r|%x)\b"
 color statement "\b(printf)\b"
 
 # Flow control
-color statement "\b(if|else|module|def)\b"
+color statement "\b(if|else|module|def|let)\b"
 
 # Methods
 # color statement "\.\b(.+?)\b"

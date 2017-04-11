@@ -1,0 +1,14 @@
+import "string" library
+
+def main()
+    return 0
+
+module outer
+    let a = 420
+    module something
+
+        def function()
+            let a = 1
+
+        module inner
+            let a = "whole new thing"

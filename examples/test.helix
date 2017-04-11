@@ -8,8 +8,9 @@ def test(int a)
 	else
 		return 2 - a
 
-
 def main()
+	printf("test hello")
+
 	return test(5) # success
 
 module something

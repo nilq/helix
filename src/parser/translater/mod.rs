@@ -25,6 +25,7 @@ pub enum CElement {
 
     Include(String),
     Module(String, Box<Vec<CElement>>),
+    Declaration(String, Box<CElement>),
     Assignment(String, Box<CElement>),
 
     Operation(Box<CElement>, String, Box<CElement>),
@@ -228,11 +229,21 @@ pub fn translate_element(ce: &CElement) -> String {
                 translate_element(r),
             ),
 
-        CElement::Assignment(ref i, ref r) => {
+        CElement::Declaration(ref i, ref r) => {
                 let mut line = "".to_string();
 
                 line.push_str(
                         &format!("{} {} = {};", type_of(&**r), i, translate_element(r))
+                    );
+
+                line
+            },
+
+        CElement::Assignment(ref i, ref r) => {
+                let mut line = "".to_string();
+
+                line.push_str(
+                        &format!("{} = {};", i, translate_element(r))
                     );
 
                 line
@@ -386,6 +397,13 @@ pub fn statement(st: &Statement) -> Option<CElement> {
 
         Statement::Assignment(ref n, ref r) => Some(
                 CElement::Assignment(
+                        n.clone(),
+                        Box::new(expression(&**r)),
+                    ),
+            ),
+
+        Statement::Declaration(ref n, ref r) => Some(
+                CElement::Declaration(
                         n.clone(),
                         Box::new(expression(&**r)),
                     ),
