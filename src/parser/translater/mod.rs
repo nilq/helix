@@ -20,8 +20,9 @@ pub enum CElement {
 
     Call(Box<CElement>, Box<Vec<CElement>>),
 
-    IndexDot(Box<CElement>, String),
-    IndexColon(Box<CElement>, String),
+    IndexDot(Box<CElement>, Box<CElement>),
+    IndexColon(Box<CElement>, Box<CElement>),
+    IndexArray(Box<CElement>, Box<CElement>),
 
     Include(String),
     Module(String, Box<Vec<CElement>>),
@@ -132,8 +133,9 @@ pub fn translate_element(ce: &CElement) -> String {
 
         CElement::Return(ref e) => format!("return {};\n", translate_element(&**e)),
 
-        CElement::IndexDot(ref a, ref b) => format!("{}.{}", translate_element(&**a), b),
-        CElement::IndexColon(ref a, ref b) => format!("{}::{}", translate_element(&**a), b),
+        CElement::IndexDot(ref a, ref b) => format!("{}.{}", translate_element(&**a), translate_element(&**b)),
+        CElement::IndexColon(ref a, ref b) => format!("{}::{}", translate_element(&**a), translate_element(&**b)),
+        CElement::IndexArray(ref a, ref b) => format!("{}[{}]", translate_element(&**a), translate_element(&**b)),
 
         CElement::Block(ref c) => {
                 let mut block = "".to_string();
@@ -305,19 +307,24 @@ pub fn expression(ex: &Expression) -> CElement {
         Expression::Boolean(ref f)                 => CElement::Boolean(f.clone()),
         Expression::Ident(ref f)                   => CElement::Ident(f.clone()),
         Expression::Return(ref e)                  => CElement::Return(Box::new(expression(&**e))),
-        
+
         Expression::Typed(ref r, ref f)            => CElement::Typed(
                 Box::new(expression(&**r)), Box::new(expression(&**f)),
             ),
 
         Expression::IndexDot(ref a, ref b)         => CElement::IndexDot(
                 Box::new(expression(&**a)),
-                b.clone(),
+                Box::new(expression(&**b)),
+            ),
+
+        Expression::IndexArray(ref a, ref b)       => CElement::IndexArray(
+                Box::new(expression(&**a)),
+                Box::new(expression(&**b)),
             ),
 
         Expression::IndexColon(ref a, ref b)       => CElement::IndexColon(
                 Box::new(expression(&**a)),
-                b.clone(),
+                Box::new(expression(&**b)),
             ),
 
         Expression::Call(ref e, ref c)             => {

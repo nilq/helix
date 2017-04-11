@@ -51,12 +51,17 @@ pub enum Expression {
 
     IndexDot(
             Box<Expression>,
-            String,
+            Box<Expression>,
         ),
 
     IndexColon(
             Box<Expression>,
-            String,
+            Box<Expression>,
+        ),
+
+    IndexArray(
+            Box<Expression>,
+            Box<Expression>,
         ),
 
     Return(Box<Expression>),
@@ -237,10 +242,10 @@ impl Parser {
 
         try!(self.tokenizer.match_current(TokenType::Ident));
 
-        let index = self.tokenizer.current_content();
+        let index = try!(self.expression());
 
         Ok(
-            Expression::IndexDot(Box::new(id), index)
+            Expression::IndexDot(Box::new(id), Box::new(index))
         )
     }
 
@@ -249,11 +254,40 @@ impl Parser {
         
         try!(self.tokenizer.match_current(TokenType::Ident));
 
-        let index = self.tokenizer.current_content();
+        let index = try!(self.expression());
 
         Ok(
-            Expression::IndexColon(Box::new(id), index)
+            Expression::IndexColon(Box::new(id), Box::new(index))
         )
+    }
+
+    fn index(&mut self, id: Expression) -> Result<Expression, String> {
+        self.tokenizer.next_token();
+
+        let index = try!(self.expression());
+
+        self.tokenizer.next_token();
+
+        try!(self.tokenizer.match_current(TokenType::RBracket));
+
+        self.tokenizer.next_token();
+
+        let expression = Expression::IndexArray(Box::new(id), Box::new(index));
+
+        match self.tokenizer.current().get_type() {
+            TokenType::Period => Ok(try!(self.dot(expression))),
+            TokenType::Colon  => {
+                    self.tokenizer.next_token();
+
+                    if self.tokenizer.current().get_type() == TokenType::Colon {
+                        self.colon(expression)
+                    } else {
+                        self.typed(expression)
+                    }
+                },
+            TokenType::LParen => Ok(try!(self.call(expression))),            
+            _                 => Ok(expression),
+        }
     }
 
     fn typed(&mut self, id: Expression) -> Result<Expression, String> {
@@ -306,6 +340,7 @@ impl Parser {
                         return match self.tokenizer.current().get_type() {
                             TokenType::Operator  => self.operation(ident),
                             TokenType::Period    => self.dot(ident),
+                            TokenType::LBracket  => self.index(ident),
                             TokenType::Colon     => {
                                     self.tokenizer.next_token();
                                     if self.tokenizer.current().get_type() == TokenType::Colon {
