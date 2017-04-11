@@ -42,14 +42,6 @@ impl<'a> Tokenizer {
         &self.tokens
     }
 
-    pub fn clear(&mut self) {
-        self.tokens = Vec::new();
-        self.lines  = 0;
-        self.start  = 0;
-        self.pos    = 0;
-        self.top    = 0;
-    }
-
     fn push(&mut self, token_type: TokenType, line: &str) {
         self.tokens.push(
             Token::new(
@@ -124,7 +116,7 @@ impl<'a> Tokenizer {
     }
 
     pub fn prev_token(&mut self) -> bool {
-        if self.top < self.tokens.len() {
+        if self.top > 0 {
             self.top -= 1;
             
             return true
@@ -233,14 +225,6 @@ impl<'a> Tokenizer {
 
                     self.push(TokenType::Integer, line);
 
-                    continue
-                }
-
-                // TODO: make less hacky
-                if c == '-' && self.look(line) == '>' {
-                    self.pos += 2;
-                    self.push(TokenType::Arrow, line);
-                    
                     continue
                 }
 

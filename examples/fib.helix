@@ -1,0 +1,7 @@
+def fib(int a)
+	if a < 3
+		return a
+	return fib(a - 1) + fib(a - 2)
+
+def main()
+	return fib(5)

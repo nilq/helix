@@ -224,9 +224,9 @@ pub fn translate_element(ce: &CElement) -> String {
 
         CElement::Operation(ref l, ref o, ref r) => format!(
                 "({} {} {})",
-                translate_element(l),
-                o.clone(),
                 translate_element(r),
+                o.clone(),
+                translate_element(l),
             ),
 
         CElement::Declaration(ref i, ref r) => {
