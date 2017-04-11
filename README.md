@@ -24,6 +24,8 @@ options:
 import "iostream" library
 import "string" library
 
+import "localfile.h"
+
 def test(int a)
 	if a == 6
 		return 2 + a
@@ -48,6 +50,7 @@ $ helix translate test.helix test.cpp
 // test.cpp
 #include <iostream>
 #include <string>
+#include "localfile.h"
 
 using namespace std;
 
