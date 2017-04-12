@@ -31,6 +31,8 @@ pub enum CElement {
     Declaration(String, Box<CElement>),
     Assignment(String, Box<CElement>),
 
+    Use(Box<CElement>),
+
     Operation(Box<CElement>, String, Box<CElement>),
     Function(String, Vec<(String, String)>, Box<Vec<CElement>>, Option<String>),
 
@@ -132,6 +134,7 @@ pub fn translate_element(ce: &CElement) -> String {
         CElement::Text(ref i)     => format!("\"{}\"", i.to_string()),
 
         CElement::Return(ref e) => format!("return {};\n", translate_element(&**e)),
+        CElement::Use(ref e)    => format!("using namespace {};\n", translate_element(&**e)),
 
         CElement::IndexDot(ref a, ref b) => format!("{}.{}", translate_element(&**a), translate_element(&**b)),
         CElement::IndexColon(ref a, ref b) => format!("{}::{}", translate_element(&**a), translate_element(&**b)),
@@ -307,6 +310,7 @@ pub fn expression(ex: &Expression) -> CElement {
         Expression::Boolean(ref f)                 => CElement::Boolean(f.clone()),
         Expression::Ident(ref f)                   => CElement::Ident(f.clone()),
         Expression::Return(ref e)                  => CElement::Return(Box::new(expression(&**e))),
+        Expression::Use(ref e)                     => CElement::Use(Box::new(expression(&**e))),
 
         Expression::Typed(ref r, ref f)            => CElement::Typed(
                 Box::new(expression(&**r)), Box::new(expression(&**f)),

@@ -23,6 +23,10 @@ pub enum Expression {
             Box<Vec<Expression>>,
         ),
 
+    Use(
+            Box<Expression>,
+        ),
+
     Module(
             String,
             Box<Vec<Statement>>,
@@ -440,6 +444,14 @@ impl Parser {
                                 ident,
                                 false,
                             )
+                    )
+                },
+
+            TokenType::Use => {
+                    self.tokenizer.next_token();
+
+                    Ok(
+                        Expression::Use(Box::new(try!(self.term())))
                     )
                 },
 

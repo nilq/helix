@@ -1,8 +1,18 @@
 module foo
-	a = 1
+	let a = 1
 
 module bar
-	b = 2
+	module inner
+		def test()
+			let a = 1
 
-	if foo == 1
-		b = a
+			return 0
+
+	def test()
+		let b = 2
+	
+		if foo == 1
+			let b = a
+
+def main()
+	return bar::inner::test

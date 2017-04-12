@@ -33,6 +33,7 @@ pub enum TokenType {
     Return,
     Let,
     Struct,
+    Use,
 
     Boolean,
     Operator,

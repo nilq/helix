@@ -1,0 +1,8 @@
+module test
+	module inner_test
+		def test()
+			return 0
+
+# something
+module other
+	use test::inner_test
