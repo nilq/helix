@@ -13,7 +13,7 @@ color preproc "(\b(import|library)|%q|%!|%Q|%r|%x)\b"
 color statement "\b(printf)\b"
 
 # Flow control
-color statement "\b(if|else|module|struct|def|let|return|int|char|string|float|double)\b"
+color statement "\b(if|else|module|struct|def|use|let|return|int|char|string|float|double)\b"
 
 # Methods
 # color statement "\.\b(.+?)\b"
@@ -27,9 +27,6 @@ color constant.number "\b([0-9]+)\b"
 # Symbols
 color symbol "(\(|\)|\[|\]|\{|\}|\*|/|%|\+|-|\^|>|<|=|!|,)"
 color special "(->|\.\.\.)"
-
-# Classes
-color constant "(^)\b(\S+?)\b\:"
 
 # Strings
 color constant.string "\"(\\.|[^\\\"])*\"|'(\\.|[^\\'])*'"
