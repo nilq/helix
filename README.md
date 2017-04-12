@@ -87,7 +87,7 @@ module fruits
 		size: int
 
 	struct guava
-		intelligense: int
+		intelligence: int
 		size: int
 
 def main()
