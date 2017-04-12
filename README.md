@@ -7,8 +7,9 @@ A programming language transpiler
 helix language
 
 usage:
-    helix repl
-    helix translate <source>
+    helix run <source>
+    helix build <source> <destination>
+    helix translate <source> <destination>
     helix (-h | --help)
     helix --version
 
