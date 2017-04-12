@@ -20,64 +20,6 @@ options:
 ## Examples
 
 ```helix
-# test.helix
-import "iostream" library
-import "string" library
-
-import "localfile.h"
-
-def test(int a)
-	if a == 6
-		return 2 + a
-	else
-		return 2 - a
-
-def main()
-	return test(5) # success
-
-module something
-	foo = "bar"
-
-	module inside
-		foo = "hey"
-```
-
-```
-$ helix translate test.helix test.cpp
-```
-
-```cpp
-// test.cpp
-#include <iostream>
-#include <string>
-#include "localfile.h"
-
-using namespace std;
-
-auto test(int a) {
-	if((6 == a)) {
-		return (a + 2);
-	} else {
-		return (a - 2);
-	}
-}
-
-int main() {
-	return test(5);
-}
-
-namespace something {
-	string foo = "bar";
-	
-	namespace inside {
-		string foo = "hey";
-	}
-}
-```
-
-## More examples
-
-```helix
 import "string"   library
 import "iostream" library
 
@@ -102,4 +44,34 @@ def main()
 	printf("my banana's name is: %s", my_banana.name)
 
 	return 0
+```
+
+```
+$ helix translate test.helix test.cpp
+```
+
+```cpp
+#include <string>
+#include <iostream>
+using namespace std;
+
+namespace fruits {
+
+	struct banana {
+		char name[50];int size;
+	};
+
+	struct guava {
+		int intelligence;int size;
+	};
+}
+
+int main() {
+	fruits::banana my_banana;;
+	fruits::guava my_guava;;
+	printf("enter name of banana, please: ");
+	cin.get(my_banana.name,50);
+	printf("my banana's name is: %s",my_banana.name);
+	return 0;
+}
 ```

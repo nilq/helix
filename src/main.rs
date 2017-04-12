@@ -20,6 +20,7 @@ helix language
 usage:
     helix run <source>
     helix build <source> <destination>
+    helix translate <source> <destination>
     helix (-h | --help)
     helix --version
 
@@ -124,12 +125,21 @@ fn main() {
                        .and_then(|d| d.argv(argv.into_iter()).parse())
                        .unwrap_or_else(|e| e.exit());
 
-    if args.get_bool("build") {
+    if args.get_bool("translate") {
         let source = args.get_str("<source>");
         let destination = args.get_str("<destination>");
 
         write(&translate(parse(&file(source))), destination);
+
+    } else if args.get_bool("build") {
+        let source = args.get_str("<source>");
+        let destination = args.get_str("<destination>");
+
+        write(&translate(parse(&file(source))), destination);
+        
+        Command::new("rm -f").arg(destination).spawn().expect("failed to remove temporary file");
         binary(destination, "out")
+
     } else if args.get_bool("run") {
         let source = args.get_str("<source>");
         let destination = "tmp.cpp";
@@ -137,6 +147,7 @@ fn main() {
         write(&translate(parse(&file(source))), destination);
         binary(destination, "out");
 
+        Command::new("rm -f").arg(destination).spawn().expect("failed to remove temporary file");
         Command::new("./").arg("out").spawn().expect("failed to execute binary");
     }
 }
