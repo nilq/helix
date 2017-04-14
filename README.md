@@ -1,4 +1,4 @@
-<img align="right" width="25%" height="25%" alt="praise lord helix" src="http://assets.pokemon.com/assets/cms2/img/pokedex/full/139.png">
+<img align="right" width="35%" height="35%" alt="praise lord helix" src="http://assets.pokemon.com/assets/cms2/img/pokedex/full/139.png">
 
 # helix
 A programming language transpiler
