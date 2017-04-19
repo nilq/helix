@@ -13,13 +13,9 @@ pub struct Chunk<'a> {
 }
 
 impl<'a> Chunk<'a> {
-    pub fn new(
-        value: ChunkValue<'a>
-    ) -> Chunk<'a> {
+    pub fn new(value: ChunkValue<'a>) -> Chunk<'a> {
 
-        Chunk {
-            value: value,
-        }
+        Chunk { value: value }
     }
 
     pub fn get_value(&self) -> ChunkValue<'a> {
@@ -33,41 +29,34 @@ pub struct Branch<'a> {
 }
 
 impl<'a> Branch<'a> {
-    pub fn new(
-        content: Vec<Chunk<'a>>
-    ) -> Branch<'a> {
+    pub fn new(content: Vec<Chunk<'a>>) -> Branch<'a> {
 
-        Branch {
-            content: content,
-        }
+        Branch { content: content }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct BlockTree<'a> {
     source: &'a str,
-    line:   usize,
+    line: usize,
     method: Option<char>,
 }
 
 impl<'a> BlockTree<'a> {
-    pub fn new(
-        source: &'a str,
-        line:   usize,
-    ) -> BlockTree {
+    pub fn new(source: &'a str, line: usize) -> BlockTree {
 
         BlockTree {
             source: source,
-            line:   line,
+            line: line,
             method: None,
         }
     }
 
     pub fn collect_indents(&mut self) -> Vec<(usize, &'a str)> {
         let mut indents: Vec<(usize, &'a str)> = Vec::new();
-        
+
         let mut lines = self.source.lines();
-    
+
         while let Some(line) = lines.next() {
 
             let parts: Vec<&str> = line.split("#").collect();
@@ -90,7 +79,7 @@ impl<'a> BlockTree<'a> {
                 ' ' | '\t' => {
                     match self.method {
                         Some(m) => assert!(m == c, "use of inconsistent indentation"),
-                        None    => self.method = Some(c),
+                        None => self.method = Some(c),
                     }
 
                     pos += 1
@@ -103,39 +92,30 @@ impl<'a> BlockTree<'a> {
         pos
     }
 
-    pub fn make_tree(
-        &mut self,
-        indents: &Vec<(usize, &'a str)>
-    ) -> Branch<'a> {
+    pub fn make_tree(&mut self, indents: &Vec<(usize, &'a str)>) -> Branch<'a> {
         let mut branch = Branch::new(Vec::new());
-        let base_line  = indents.get(self.line);
+        let base_line = indents.get(self.line);
 
         let &(base_indent, _) = match base_line {
-                                    Some(i) => i,
-                                    None    => return branch,
-                                };
+            Some(i) => i,
+            None => return branch,
+        };
 
         while self.line < indents.len() {
             let &(indent, line) = match indents.get(self.line) {
-                                      Some(i) => i,
-                                      None    => panic!("branching nothing!?"),
-                                  };
-            
+                Some(i) => i,
+                None => panic!("branching nothing!?"),
+            };
+
             if indent == base_indent {
-                branch.content.push(
-                    Chunk::new(ChunkValue::Text(line)),
-                )
+                branch.content.push(Chunk::new(ChunkValue::Text(line)))
             } else if indent < base_indent {
                 self.line -= 1;
-                return branch
+                return branch;
             } else if indent > base_indent {
-                branch.content.push(
-                    Chunk::new(
-                            ChunkValue::Block(
-                                self.make_tree(&indents)
-                            ),
-                        ),
-                )
+                branch
+                    .content
+                    .push(Chunk::new(ChunkValue::Block(self.make_tree(&indents))))
             }
 
             self.line += 1

@@ -1,6 +1,8 @@
 import "string"   library
 import "iostream" library
 
+use std
+
 module fruits
 	struct banana
 		name[50]: char

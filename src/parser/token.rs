@@ -34,6 +34,8 @@ pub enum TokenType {
     Let,
     Struct,
     Use,
+    Implement,
+    Class,
 
     Boolean,
     Operator,
@@ -44,7 +46,7 @@ pub enum Operator {
     Mul,
     Div,
     Mod,
-    
+
     Plus,
     Minus,
 
@@ -54,29 +56,24 @@ pub enum Operator {
     Lt,
     LtEqual,
     Gt,
-    GtEqual,    
+    GtEqual,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Token {
     token_type: TokenType,
-    row:        u32,
-    col:        u32,
-    content:    String,    
+    row: u32,
+    col: u32,
+    content: String,
 }
 
 impl Token {
-    pub fn new(
-        token_type: TokenType,
-        content:    String,
-        row:        u32,
-        col:        u32,
-    ) -> Token {
+    pub fn new(token_type: TokenType, content: String, row: u32, col: u32) -> Token {
         Token {
             token_type: token_type,
-            row:        row,
-            col:        col,
-            content:    content,
+            row: row,
+            col: col,
+            content: content,
         }
     }
 
