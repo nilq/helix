@@ -1,4 +1,4 @@
-![praise lord helix](http://assets.pokemon.com/assets/cms2/img/pokedex/full/139.png)
+<img align="right" width="35%" height="35%" alt="praise lord helix" src="http://assets.pokemon.com/assets/cms2/img/pokedex/full/139.png">
 
 # helix
 A programming language transpiler
@@ -25,26 +25,25 @@ import "string"   library
 import "iostream" library
 
 module fruits
-	struct banana
-		name[50]: char
-		size: int
+  struct banana
+    name[50]: char
+    size: int
 
-	struct guava
-		intelligence: int
-		size: int
+  struct guava
+    intelligence: int
+    size: int
 
 def main()
+  my_banana: fruits::banana
+  my_guava:  fruits::guava
 
-	my_banana: fruits::banana
-	my_guava:  fruits::guava
+  printf("enter name of banana, please: ")
 
-	printf("enter name of banana, please: ")
+  cin.get(my_banana.name, 50)
 
-	cin.get(my_banana.name, 50)
+  printf("my banana's name is: %s", my_banana.name)
 
-	printf("my banana's name is: %s", my_banana.name)
-
-	return 0
+  return 0
 ```
 
 ```
@@ -57,22 +56,21 @@ $ helix translate test.helix test.cpp
 using namespace std;
 
 namespace fruits {
+  struct banana {
+    char name[50];int size;
+  };
 
-	struct banana {
-		char name[50];int size;
-	};
-
-	struct guava {
-		int intelligence;int size;
-	};
+  struct guava {
+    int intelligence;int size;
+  };
 }
 
 int main() {
-	fruits::banana my_banana;;
-	fruits::guava my_guava;;
-	printf("enter name of banana, please: ");
-	cin.get(my_banana.name,50);
-	printf("my banana's name is: %s",my_banana.name);
-	return 0;
+  fruits::banana my_banana;;
+  fruits::guava my_guava;;
+  printf("enter name of banana, please: ");
+  cin.get(my_banana.name,50);
+  printf("my banana's name is: %s",my_banana.name);
+  return 0;
 }
 ```
