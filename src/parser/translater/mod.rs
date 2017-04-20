@@ -20,6 +20,10 @@ pub enum CElement {
 
     Call(Box<CElement>, Box<Vec<CElement>>),
 
+    Class(String, Box<Vec<CElement>>),
+    Implement(String, Box<Vec<CElement>>),
+    FunctionDef(String, Vec<(String, String)>, Box<CElement>),
+
     IndexDot(Box<CElement>, Box<CElement>),
     IndexColon(Box<CElement>, Box<CElement>),
     IndexArray(Box<CElement>, Box<CElement>),
@@ -43,19 +47,23 @@ pub enum CElement {
 pub struct Environment {
     title:   String,
     imports: Vec<String>,
+    header:  Vec<String>,
     pub global: Vec<CElement>,
 }
 
 impl<'a> Environment {
     pub fn new(title: String) -> Environment {
         Environment {
-            title:   title,
+            title:   title.clone(),
+            header:  vec!(
+                format!("#ifndef {0}\n#define {0}", title),
+            ),
             imports: Vec::new(),
-            global: Vec::new(),
+            global:  Vec::new(),
         }
     }
 
-    pub fn translate_imports(&self) -> String {
+    pub fn translate_imports(&mut self) -> String {
         let mut imports = "".to_string();
 
         for import in self.imports.iter() {
@@ -64,17 +72,33 @@ impl<'a> Environment {
                 )
         }
 
-        imports.push_str("using namespace std;\n");
+        self.header.insert(1, imports);
 
-        imports
+        format!("#include \"{}.hpp\"\n", self.title)
     }
 
-    pub fn translate_global(&mut self) -> String {
+    pub fn class(&mut self, c: CElement) {
+        self.header.push(translate_element(&c))
+    }
+
+    pub fn header(&self) -> String {
+        let mut header = "".to_string();
+
+        for s in &self.header {
+            header.push_str(&s);
+            header.push('\n')
+        }
+
+        header.push_str("#endif");
+        header
+    }
+
+    pub fn translate_global(&self) -> String {
         let mut global = "".to_string();
 
-        for module in self.global.iter() {
+        for module in &self.global {
             global.push_str(
-                    &translate_element(module),
+                    &translate_element(&module),
                 )
         }
 
@@ -102,22 +126,24 @@ impl Translater {
         for s in ast.iter() {
             if let Some(c) = statement(s) {
                 match c {
-                    CElement::Include(i)   => self.environment.import(i),
                     CElement::Function(_, _, _, _)
+                    | CElement::Implement(_, _)
                     | CElement::Module(_, _) => self.environment.global.push(c),
+                    CElement::Include(i)     => self.environment.import(i),
+                    CElement::Class(_, _)    => self.environment.class(c),
                     _ => continue,
                 }
             }
         }
     }
 
-    pub fn translate(&mut self) -> String {
+    pub fn translate(&mut self) -> (String, String) {
         let mut source = "".to_string();
 
         source.push_str(&self.environment.translate_imports());
         source.push_str(&self.environment.translate_global());
 
-        source
+        (source, self.environment.header())
     }
 
     pub fn get_environment(&self) -> &Environment {
@@ -136,7 +162,58 @@ pub fn translate_element(ce: &CElement) -> String {
         CElement::Return(ref e) => format!("return {};\n", translate_element(&**e)),
         CElement::Use(ref e)    => format!("using namespace {};\n", translate_element(&**e)),
 
-        CElement::IndexDot(ref a, ref b) => format!("{}.{}", translate_element(&**a), translate_element(&**b)),
+        CElement::FunctionDef(ref n, ref a, ref t) => {
+            let mut args = "".to_string();
+            let mut accum: usize = 0;
+
+            for &(ref t, ref n) in a.iter() {
+                if accum > 0 {
+                    args.push_str(",")
+                }
+
+                args.push_str(&format!("{} {}", t, n));
+
+                accum += 1
+            }
+
+            format!("{} {} ({});", translate_element(t), n, args)
+        },
+
+        CElement::Class(ref n, ref c) => {
+
+                let mut class = "".to_string();
+
+                for e in c.iter() {
+                    class.push_str(
+                            &translate_element(&e)
+                        )
+                }
+
+                format!(
+                        "class {} {{\npublic:\n\t{}\n}};",
+                        n, class,
+                    )
+            },
+
+        CElement::Implement(ref n, ref c) => {
+
+                let mut implementation = "".to_string();
+
+                for e in c.iter() {
+                    match e {
+                        &CElement::Function(ref n1, ref a, ref c, ref t) => implementation.push_str(
+                            &translate_element(
+                                &CElement::Function(format!("{}::{}", n, n1), a.clone(), c.clone(), t.clone()),
+                            )
+                        ),
+                        _ => panic!("Unexpected impementation of: {:?}", e),
+                    }
+                }
+
+                format!("\n{}\n", implementation)
+            },
+
+        CElement::IndexDot(ref a, ref b)   => format!("{}.{}", translate_element(&**a), translate_element(&**b)),
         CElement::IndexColon(ref a, ref b) => format!("{}::{}", translate_element(&**a), translate_element(&**b)),
         CElement::IndexArray(ref a, ref b) => format!("{}[{}]", translate_element(&**a), translate_element(&**b)),
 
@@ -298,7 +375,7 @@ pub fn translate_element(ce: &CElement) -> String {
                     )
             },
 
-        _ => panic!("unknown element: {:?}", ce),
+        CElement::Include(ref n) => format!("#include {}\n", n),
     }
 }
 
@@ -311,6 +388,40 @@ pub fn expression(ex: &Expression) -> CElement {
         Expression::Ident(ref f)                   => CElement::Ident(f.clone()),
         Expression::Return(ref e)                  => CElement::Return(Box::new(expression(&**e))),
         Expression::Use(ref e)                     => CElement::Use(Box::new(expression(&**e))),
+
+        Expression::FunctionDef(ref n, ref a, ref t) => {
+            CElement::FunctionDef(n.clone(), a.clone(), Box::new(expression(&**t)))
+        },
+
+        Expression::Class(ref n, ref c)            => {
+                let mut statement_stack: Vec<CElement> = Vec::new();
+
+                for s in c.iter() {
+                    if let Some(c) = statement(s) {
+                        statement_stack.push(c)
+                    }
+                }
+
+                CElement::Class(
+                    n.clone(),
+                    Box::new(statement_stack),
+                )
+            },
+
+        Expression::Implement(ref n, ref c)            => {
+                let mut statement_stack: Vec<CElement> = Vec::new();
+
+                for s in c.iter() {
+                    if let Some(c) = statement(s) {
+                        statement_stack.push(c)
+                    }
+                }
+
+                CElement::Implement(
+                    n.clone(),
+                    Box::new(statement_stack),
+                )
+            },
 
         Expression::Typed(ref r, ref f)            => CElement::Typed(
                 Box::new(expression(&**r)), Box::new(expression(&**f)),

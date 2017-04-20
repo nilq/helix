@@ -30,6 +30,8 @@ pub enum Expression {
 
     Function(String, Vec<(String, String)>, Box<Vec<Statement>>),
 
+    FunctionDef(String, Vec<(String, String)>, Box<Expression>),
+
     IndexDot(Box<Expression>, Box<Expression>),
 
     IndexColon(Box<Expression>, Box<Expression>),
@@ -211,8 +213,6 @@ impl Parser {
     }
 
     fn typed(&mut self, id: Expression) -> Result<Expression, String> {
-        try!(self.tokenizer.match_current(TokenType::Ident));
-
         let ident = try!(self.term());
 
         Ok(Expression::Typed(Box::new(id), Box::new(ident)))
@@ -385,15 +385,32 @@ impl Parser {
 
                         self.tokenizer.next_token();
 
-                        args.push((t, n));
+                        if self.tokenizer.current().get_type() == TokenType::Comma {
+                            self.tokenizer.next_token();                      
+                        }
+
+                        args.push((t, n));                        
                     }
 
                     self.tokenizer.next_token();
                 }
 
-                let body = try!(self.block());
+                match self.tokenizer.current().get_type() {
+                    TokenType::Block(_) => {
+                        let body = try!(self.block());
+                        Ok(Expression::Function(name, args, Box::new(body)))
+                    },
 
-                Ok(Expression::Function(name, args, Box::new(body)))
+                    _ => {
+                        self.tokenizer.prev_token();
+                        try!(self.tokenizer.match_current(TokenType::Arrow));
+
+                        self.tokenizer.next_token();
+
+                        let retty = try!(self.term());
+                        Ok(Expression::FunctionDef(name, args, Box::new(retty)))
+                    }
+                }
             }
 
             TokenType::Return => {

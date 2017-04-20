@@ -29,6 +29,7 @@ options:
     --version   display version
 ";
 
+#[allow(dead_code)]
 fn repl() {
     loop {
         print!(">>> ");
@@ -75,7 +76,7 @@ fn parse(source: &str) -> Vec<Statement> {
     }
 }
 
-fn translate(ast: Vec<Statement>) -> String {
+fn translate(ast: Vec<Statement>) -> (String, String) {
     use parser::translater::Translater;
 
     let mut transpiler = Translater::new("test".to_string());
@@ -132,13 +133,19 @@ fn main() {
         let source = args.get_str("<source>");
         let destination = args.get_str("<destination>");
 
-        write(&translate(parse(&file(source))), destination);
+        let (source, header) = translate(parse(&file(source)));
+
+        write(&source, &format!("{}.cpp", destination));
+        write(&header, &format!("{}.hpp", destination));
 
     } else if args.get_bool("build") {
         let source = args.get_str("<source>");
         let destination = args.get_str("<destination>");
 
-        write(&translate(parse(&file(source))), destination);
+        let (source, header) = translate(parse(&file(source)));
+
+        write(&source, &format!("{}.cpp", destination));
+        write(&header, &format!("{}.hpp", destination));
 
         Command::new("rm -f")
             .arg(destination)
@@ -150,8 +157,12 @@ fn main() {
         let source = args.get_str("<source>");
         let destination = "tmp.cpp";
 
-        write(&translate(parse(&file(source))), destination);
-        binary(destination, "out");
+        let (source, header) = translate(parse(&file(source)));
+
+        write(&source, &format!("{}.cpp", destination));
+        write(&header, &format!("{}.hpp", destination));
+
+        binary(&format!("{}.cpp", destination), "out");
 
         Command::new("rm -f")
             .arg(destination)

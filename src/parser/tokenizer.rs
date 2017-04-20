@@ -170,7 +170,7 @@ impl<'a> Tokenizer {
                     self.pos += 1;
                     self.start += 1;
 
-                    continue;
+                    continue
                 }
 
                 if identifier(self.look(line)) {
@@ -183,7 +183,7 @@ impl<'a> Tokenizer {
                         None => self.push(TokenType::Ident, line),
                     }
 
-                    continue;
+                    continue
                 }
 
                 let peek = self.peek(line, 1);
@@ -207,19 +207,26 @@ impl<'a> Tokenizer {
 
                         self.push(TokenType::Float, line);
 
-                        continue;
+                        continue
                     }
 
                     self.push(TokenType::Integer, line);
 
-                    continue;
+                    continue
+                }
+
+                if c == '-' && self.peek(line, 1) == '>' {
+                    self.pos += 2;
+                    self.push(TokenType::Arrow, line);
+
+                    continue
                 }
 
                 if self.is_operator(line) {
                     self.pos += 1;
                     self.push(TokenType::Operator, line);
 
-                    continue;
+                    continue
                 }
 
                 match c {
