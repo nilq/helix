@@ -53,13 +53,8 @@ test.hpp
 ```cpp
 #ifndef test
 #define test
-#include <string>
 
 class bird {
-public:
-	void hello (int name,int age);
-};
-class dog {
 public:
 	void hello (int name,int age);
 };
@@ -71,10 +66,6 @@ test.cpp
 #include "test.hpp"
 
 void bird::hello(int name,int age) {
-	printf("hello, %i, age %i",name,age);
-}
-
-void dog::hello(int name,int age) {
 	printf("hello, %i, age %i",name,age);
 }
 namespace bar {
