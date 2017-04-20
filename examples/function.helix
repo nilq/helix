@@ -3,7 +3,14 @@ import "string" library
 class bird
   function hello (name: int, age: int)
 
+class dog
+  function hello (name: int, age: int)
+
 implement bird
+  function hello (name: int, age: int)
+    printf("hello, %i, age %i", name, age)
+
+implement dog
   function hello (name: int, age: int)
     printf("hello, %i, age %i", name, age)
 
@@ -17,5 +24,7 @@ module bar
     return a + b
 
 function main
-  bird::hello(1, 2)
+  bob: bird
+  bob.hello(1, 2)
+
   return bar::foo(1, -1)
