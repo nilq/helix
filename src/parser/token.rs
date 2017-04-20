@@ -16,6 +16,8 @@ pub enum TokenType {
     LBracket,
     RBracket,
 
+    Nothing,
+
     Arrow,
 
     Colon,

@@ -242,6 +242,8 @@ impl Parser {
 
             TokenType::Text => Ok(Expression::Text(self.tokenizer.current_content())),
 
+            TokenType::Nothing => Ok(Expression::Ident("void".to_owned())),
+
             TokenType::Ident => {
                 let ident = Expression::Ident(self.tokenizer.current_content());
 
@@ -371,7 +373,9 @@ impl Parser {
 
                 let mut args = Vec::new();
 
-                if self.tokenizer.current().get_type() == TokenType::Ident {
+                if self.tokenizer.current().get_type() == TokenType::LParen {
+                    self.tokenizer.next_token();
+
                     while self.tokenizer.current().get_type() == TokenType::Ident {
                         let n = self.tokenizer.current_content();
 
@@ -389,11 +393,15 @@ impl Parser {
                             self.tokenizer.next_token();                      
                         }
 
-                        args.push((t, n));                        
+                        args.push((t, n));     
                     }
+                    
+                    try!(self.tokenizer.match_current(TokenType::RParen));
 
                     self.tokenizer.next_token();
+                    self.tokenizer.next_token();
                 }
+
 
                 match self.tokenizer.current().get_type() {
                     TokenType::Block(_) => {
@@ -403,12 +411,14 @@ impl Parser {
 
                     _ => {
                         self.tokenizer.prev_token();
-                        try!(self.tokenizer.match_current(TokenType::Arrow));
+                        if self.tokenizer.current().get_type() == TokenType::Arrow {
+                            self.tokenizer.next_token();
 
-                        self.tokenizer.next_token();
-
-                        let retty = try!(self.term());
-                        Ok(Expression::FunctionDef(name, args, Box::new(retty)))
+                            let retty = try!(self.term());
+                            Ok(Expression::FunctionDef(name, args, Box::new(retty)))
+                        } else {
+                            Ok(Expression::FunctionDef(name, args, Box::new(Expression::Ident("void".to_owned()))))
+                        }
                     }
                 }
             }

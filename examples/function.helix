@@ -1,15 +1,14 @@
 import "string" library
 
 class bird
-  function hello name: int, age: int -> int
+  function hello (name: int, age: int)
 
 implement bird
-  function hello name: int, age: int
+  function hello (name: int, age: int)
     printf("hello, %i, age %i", name, age)
-    return 0
 
 module bar
-  function foo a: int, b: int
+  function foo (a: int, b: int)
     var a1 = 100
 
     if a + b == 0
@@ -18,4 +17,5 @@ module bar
     return a + b
 
 function main
+  bird::hello(1, 2)
   return bar::foo(1, -1)
