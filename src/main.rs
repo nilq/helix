@@ -76,10 +76,10 @@ fn parse(source: &str) -> Vec<Statement> {
     }
 }
 
-fn translate(ast: Vec<Statement>) -> (String, String) {
+fn translate(ast: Vec<Statement>, title: &str) -> (String, String) {
     use parser::translater::Translater;
 
-    let mut transpiler = Translater::new("test".to_string());
+    let mut transpiler = Translater::new(title.to_owned());
 
     transpiler.make_environment(ast);
 
@@ -133,7 +133,7 @@ fn main() {
         let source = args.get_str("<source>");
         let destination = args.get_str("<destination>");
 
-        let (source, header) = translate(parse(&file(source)));
+        let (source, header) = translate(parse(&file(source)), destination);
 
         write(&source, &format!("{}.cpp", destination));
         write(&header, &format!("{}.hpp", destination));
@@ -142,35 +142,11 @@ fn main() {
         let source = args.get_str("<source>");
         let destination = args.get_str("<destination>");
 
-        let (source, header) = translate(parse(&file(source)));
-
-        write(&source, &format!("{}.cpp", destination));
-        write(&header, &format!("{}.hpp", destination));
-
-        Command::new("rm -f")
-            .arg(destination)
-            .spawn()
-            .expect("failed to remove temporary file");
-        binary(destination, "out")
-
-    } else if args.get_bool("run") {
-        let source = args.get_str("<source>");
-        let destination = "tmp.cpp";
-
-        let (source, header) = translate(parse(&file(source)));
+        let (source, header) = translate(parse(&file(source)), destination);
 
         write(&source, &format!("{}.cpp", destination));
         write(&header, &format!("{}.hpp", destination));
 
         binary(&format!("{}.cpp", destination), "out");
-
-        Command::new("rm -f")
-            .arg(destination)
-            .spawn()
-            .expect("failed to remove temporary file");
-        Command::new("./")
-            .arg("out")
-            .spawn()
-            .expect("failed to execute binary");
     }
 }

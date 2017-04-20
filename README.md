@@ -43,7 +43,6 @@ function main
   bob.hello(1, 2)
 
   return bar::foo(1, -1)
-
 ```
 
 ```
