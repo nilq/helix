@@ -222,6 +222,13 @@ impl<'a> Tokenizer {
                     continue
                 }
 
+                if c == '<' && self.peek(line, 1) == '-' {
+                    self.pos += 2;
+                    self.push(TokenType::NArrow, line);
+
+                    continue
+                }
+
                 if self.is_operator(line) {
                     self.pos += 1;
                     self.push(TokenType::Operator, line);

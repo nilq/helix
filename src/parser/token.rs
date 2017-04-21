@@ -19,6 +19,7 @@ pub enum TokenType {
     Nothing,
 
     Arrow,
+    NArrow,
 
     Colon,
     Comma,

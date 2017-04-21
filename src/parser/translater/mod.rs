@@ -20,7 +20,7 @@ pub enum CElement {
 
     Call(Box<CElement>, Box<Vec<CElement>>),
 
-    Class(String, Box<Vec<CElement>>),
+    Class(String, Box<Vec<CElement>>, Option<Box<CElement>>),
     Implement(String, Box<Vec<CElement>>),
     FunctionDef(String, Vec<(String, String)>, Box<CElement>),
 
@@ -130,7 +130,7 @@ impl Translater {
                     | CElement::Implement(_, _)
                     | CElement::Module(_, _) => self.environment.global.push(c),
                     CElement::Include(i)     => self.environment.import(i),
-                    CElement::Class(_, _)    => self.environment.class(c),
+                    CElement::Class(_, _, _)    => self.environment.class(c),
                     _ => continue,
                 }
             }
@@ -179,7 +179,7 @@ pub fn translate_element(ce: &CElement) -> String {
             format!("{} {} ({});", translate_element(t), n, args)
         },
 
-        CElement::Class(ref n, ref c) => {
+        CElement::Class(ref n, ref c, ref p) => {
 
                 let mut class = "".to_string();
 
@@ -189,10 +189,17 @@ pub fn translate_element(ce: &CElement) -> String {
                         )
                 }
 
-                format!(
+                if let Some(ref d) = *p {
+                    format!(
+                        "class {} : {} {{\npublic:\n\t{}\n}};",
+                        n, translate_element(&d), class,
+                    )
+                } else {
+                    format!(
                         "class {} {{\npublic:\n\t{}\n}};",
                         n, class,
                     )
+                }
             },
 
         CElement::Implement(ref n, ref c) => {
@@ -393,7 +400,7 @@ pub fn expression(ex: &Expression) -> CElement {
             CElement::FunctionDef(n.clone(), a.clone(), Box::new(expression(&**t)))
         },
 
-        Expression::Class(ref n, ref c)            => {
+        Expression::Class(ref n, ref c, ref p)       => {
                 let mut statement_stack: Vec<CElement> = Vec::new();
 
                 for s in c.iter() {
@@ -402,9 +409,15 @@ pub fn expression(ex: &Expression) -> CElement {
                     }
                 }
 
+                let parent = match *p {
+                    Some(ref p) => Some(Box::new(expression(&*p))),
+                    None        => None,
+                };
+
                 CElement::Class(
                     n.clone(),
                     Box::new(statement_stack),
+                    parent,
                 )
             },
 

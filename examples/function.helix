@@ -1,12 +1,15 @@
 import "iostream" library
 
-class bird
+class dog
   function hello (name: int, age: int)
+
+class bird <- dog
   function hello (name: int, age: int) -> int
 
 implement bird
   function hello (name: int, age: int)
     printf("hello, %i, age %i", name, age)
+    return 1
 
 module bar
   function foo (a: int, b: int)

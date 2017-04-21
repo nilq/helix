@@ -20,7 +20,7 @@ pub enum Expression {
 
     Implement(String, Box<Vec<Statement>>),
 
-    Class(String, Box<Vec<Statement>>),
+    Class(String, Box<Vec<Statement>>, Option<Box<Expression>>),
 
     Struct(String, Box<Vec<Statement>>),
 
@@ -311,9 +311,19 @@ impl Parser {
 
                 self.tokenizer.next_token();
 
+                let mut parent = None;
+
+                if self.tokenizer.current().get_type() == TokenType::NArrow {
+                    self.tokenizer.next_token();
+
+                    parent = Some(Box::new(try!(self.term())));
+
+                    self.tokenizer.next_token();
+                }
+
                 let body = try!(self.block());
 
-                Ok(Expression::Class(ident, Box::new(body)))
+                Ok(Expression::Class(ident, Box::new(body), parent))
             }
 
             TokenType::Implement => {
