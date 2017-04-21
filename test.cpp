@@ -1,6 +1,8 @@
 #include "test.hpp"
 
-int bird::hello(int name,int age) {
+ bird::bird() {
+	printf("hey");
+}int bird::hello(int name,int age) {
 	printf("hello, %i, age %i",name,age);
 return 1;
 ;

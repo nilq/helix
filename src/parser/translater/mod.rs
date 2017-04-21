@@ -397,7 +397,18 @@ pub fn expression(ex: &Expression) -> CElement {
         Expression::Use(ref e)                     => CElement::Use(Box::new(expression(&**e))),
 
         Expression::FunctionDef(ref n, ref a, ref t) => {
-            CElement::FunctionDef(n.clone(), a.clone(), Box::new(expression(&**t)))
+            let mut retty = expression(&**t);
+
+            retty = match &retty {
+                &CElement::Ident(ref t) => if &t.clone() == n {
+                    CElement::Ident("".to_owned())
+                } else {
+                    CElement::Ident(t.clone())
+                },
+                c => c.clone(),
+            };
+
+            CElement::FunctionDef(n.clone(), a.clone(), Box::new(retty))
         },
 
         Expression::Class(ref n, ref c, ref p)       => {
@@ -508,23 +519,39 @@ pub fn expression(ex: &Expression) -> CElement {
                 )
             },
 
-        Expression::Function(ref n, ref a, ref c)  => {
+        Expression::Function(ref n, ref a, ref c, ref t)  => {
                 let mut statement_stack: Vec<CElement> = Vec::new();
 
-                let mut retty = None;
+                let mut retty = match *t {
+                    Some(ref t) => Some(translate_element(&expression(&*t))),
+                    None    => None,
+                };
 
                 for s in c.iter() {
                     if let Some(c) = statement(s) {
 
-                        let expr = get_return(&c);
-
-                        if let Some(e)  = expr {
-                            retty = Some(type_of(&e).to_string())
+                        if let None = retty {
+                            let expr = get_return(&c);
+                            if let Some(e) = expr {
+                                retty = Some(type_of(&e).to_string())
+                            }
                         }
 
                         statement_stack.push(c)
                     }
                 }
+
+                retty = match retty {
+                    Some(ref t) => {
+                        if &&t == &&n {
+                            Some("".to_owned())
+                        } else {
+                            Some(t.clone())
+                        }
+                    },
+
+                    None => None,
+                };
 
                 CElement::Function(
                     n.clone(),

@@ -331,6 +331,7 @@ fn keyword(v: &str) -> Option<TokenType> {
         "structure" => Some(TokenType::Struct),
         "use" => Some(TokenType::Use),
         "nothing" => Some(TokenType::Nothing),
+        "construct" => Some(TokenType::Construct),
         _ => None,
     }
 }

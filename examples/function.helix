@@ -4,9 +4,13 @@ class dog
   function hello (name: int, age: int)
 
 class bird <- dog
+  function bird -> bird
   function hello (name: int, age: int) -> int
 
 implement bird
+  function bird -> bird
+    printf("hey")
+
   function hello (name: int, age: int)
     printf("hello, %i, age %i", name, age)
     return 1

@@ -8,6 +8,6 @@ public:
 };
 class bird : dog {
 public:
-	int hello (int name,int age);
+	 bird ();int hello (int name,int age);
 };
 #endif

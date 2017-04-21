@@ -28,7 +28,7 @@ pub enum Expression {
 
     Import(String, bool),
 
-    Function(String, Vec<(String, String)>, Box<Vec<Statement>>),
+    Function(String, Vec<(String, String)>, Box<Vec<Statement>>, Option<Box<Expression>>),
 
     FunctionDef(String, Vec<(String, String)>, Box<Expression>),
 
@@ -411,17 +411,29 @@ impl Parser {
                     self.tokenizer.next_token();
                 }
 
-
                 match self.tokenizer.current().get_type() {
                     TokenType::Block(_) => {
                         let body = try!(self.block());
-                        Ok(Expression::Function(name, args, Box::new(body)))
+                        Ok(Expression::Function(name, args, Box::new(body), None))
                     },
 
                     _ => {
                         if self.tokenizer.current().get_type() == TokenType::Arrow {
                             self.tokenizer.next_token();
                             let retty = try!(self.term());
+
+                            self.tokenizer.next_token();
+
+                            match self.tokenizer.current().get_type() {
+                                TokenType::Block(_) => {
+                                    let body = try!(self.block());
+                                    return Ok(Expression::Function(name, args, Box::new(body), Some(Box::new(retty))))
+                                }
+                                _ => (),
+                            }
+
+                            self.tokenizer.prev_token();
+
                             Ok(Expression::FunctionDef(name, args, Box::new(retty)))
                         } else {
                             self.tokenizer.prev_token();

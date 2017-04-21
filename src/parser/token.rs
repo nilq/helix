@@ -27,6 +27,7 @@ pub enum TokenType {
     Bang,
     Semicolon,
 
+    Construct,
     If,
     Else,
     Module,
