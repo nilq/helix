@@ -20,14 +20,20 @@ options:
 
 ## Examples
 
+test.helix
 ```helix
-# test.helix
-class bird
+import "iostream" library
+
+class dog
   function hello (name: int, age: int)
+
+class bird <- dog
+  function hello (name: int, age: int) -> int
 
 implement bird
   function hello (name: int, age: int)
     printf("hello, %i, age %i", name, age)
+    return 1
 
 module bar
   function foo (a: int, b: int)
@@ -53,10 +59,15 @@ test.hpp
 ```cpp
 #ifndef test
 #define test
+#include <iostream>
 
-class bird {
+class dog {
 public:
 	void hello (int name,int age);
+};
+class bird : dog {
+public:
+	int hello (int name,int age);
 };
 #endif
 ```
@@ -65,8 +76,10 @@ test.cpp
 ```cpp
 #include "test.hpp"
 
-void bird::hello(int name,int age) {
+int bird::hello(int name,int age) {
 	printf("hello, %i, age %i",name,age);
+return 1;
+;
 }
 namespace bar {
 	auto foo(int a,int b) {
