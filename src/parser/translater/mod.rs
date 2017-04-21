@@ -191,7 +191,7 @@ pub fn translate_element(ce: &CElement) -> String {
 
                 if let Some(ref d) = *p {
                     format!(
-                        "class {} : {} {{\npublic:\n\t{}\n}};",
+                        "class {} : public {} {{\npublic:\n\t{}\n}};",
                         n, translate_element(&d), class,
                     )
                 } else {
