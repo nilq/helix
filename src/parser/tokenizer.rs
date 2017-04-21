@@ -312,7 +312,7 @@ pub fn flatten_tree<'b>(branch: &block_tree::Branch<'b>) -> Vec<Token> {
 }
 
 fn identifier(c: char) -> bool {
-    c.is_alphabetic() || c == '_' || c == '?' || c == '!'
+    c.is_alphabetic() || c == '_' || c == '&'
 }
 
 fn keyword(v: &str) -> Option<TokenType> {
