@@ -2,6 +2,7 @@ import "iostream" library
 
 class bird
   function hello (name: int, age: int)
+  function hello (name: int, age: int) -> int
 
 implement bird
   function hello (name: int, age: int)

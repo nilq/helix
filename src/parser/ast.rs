@@ -395,10 +395,9 @@ impl Parser {
 
                         args.push((t, n));     
                     }
-                    
+
                     try!(self.tokenizer.match_current(TokenType::RParen));
 
-                    self.tokenizer.next_token();
                     self.tokenizer.next_token();
                 }
 
@@ -410,13 +409,12 @@ impl Parser {
                     },
 
                     _ => {
-                        self.tokenizer.prev_token();
                         if self.tokenizer.current().get_type() == TokenType::Arrow {
                             self.tokenizer.next_token();
-
                             let retty = try!(self.term());
                             Ok(Expression::FunctionDef(name, args, Box::new(retty)))
                         } else {
+                            self.tokenizer.prev_token();
                             Ok(Expression::FunctionDef(name, args, Box::new(Expression::Ident("void".to_owned()))))
                         }
                     }
@@ -429,7 +427,7 @@ impl Parser {
                 Ok(Expression::Return(Box::new(try!(self.expression()))))
             }
 
-            _ => Err(format!("unexpected term: {:#?}", token_type)),
+            _ => Err(format!("unexpected token: {:#?}", token_type)),
         }
     }
 
